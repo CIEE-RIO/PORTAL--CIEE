@@ -6,8 +6,7 @@
         contratosDesligados: 1.3,
         ticketsResolvidos: .9,
         satisfacaoPositiva: 0,
-        satisfacaoNegativa: 0,
-        sla: 0
+        satisfacaoNegativa: 0
     };
 
     const formulas = [
@@ -198,7 +197,7 @@
             return;
         }
 
-        tabela.innerHTML = Object.keys(nomesKpis).map(kpi => {
+        tabela.innerHTML = Object.keys(nomesKpis).filter(kpi => kpi !== "sla").map(kpi => {
             const peso = Number(pesosPadrao[kpi] ?? 1);
             return `
                 <tr>

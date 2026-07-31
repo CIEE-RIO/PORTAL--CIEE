@@ -83,6 +83,10 @@
                             <span>Meses avaliados</span>
                             <strong id="colaboradorMeses">0</strong>
                         </article>
+                        <article class="kpi-card">
+                            <span>SLA médio</span>
+                            <strong id="colaboradorSla">-</strong>
+                        </article>
                     </div>
                 </article>
 
@@ -96,6 +100,25 @@
                         </div>
                         <div class="chart-card">
                             <canvas id="graficoColaborador"></canvas>
+                        </div>
+                    </article>
+
+                    <article class="dashboard collaborator-activity-panel">
+                        <div class="section-heading">
+                            <div>
+                                <h2>Resumo por atividade</h2>
+                                <p>Números absolutos das atividades principais em cada competência.</p>
+                            </div>
+                        </div>
+                        <div class="table-wrap collaborator-activity-wrap">
+                            <table>
+                                <thead id="cabecalhoAtividadesColaborador">
+                                    <tr><th>Mês</th><th>Total</th></tr>
+                                </thead>
+                                <tbody id="resumoAtividadesColaborador">
+                                    <tr><td colspan="2">Selecione um colaborador.</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </article>
 
@@ -114,10 +137,11 @@
                                         <th>Produção</th>
                                         <th>Meta</th>
                                         <th>% Meta</th>
+                                        <th>SLA</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabelaMensalColaborador">
-                                    <tr><td colspan="4">Selecione um colaborador.</td></tr>
+                                    <tr><td colspan="5">Selecione um colaborador.</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -130,6 +154,12 @@
                         <h2>Mural de destaques</h2>
                         <p id="competenciaDestaques">Top colaboradores da última competência publicada.</p>
                     </div>
+                    <label class="import-field collaborator-highlight-filter">
+                        <span>Competência</span>
+                        <select id="filtroCompetenciaDestaques">
+                            <option value="">Última competência</option>
+                        </select>
+                    </label>
                 </div>
 
                 <div id="muralDestaques" class="highlights-content">

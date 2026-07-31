@@ -201,6 +201,26 @@
         return `${nomesMesesCurtos[mes - 1] || competencia}/${ano}`;
     }
 
+    function slaDoMes(item) {
+        return Number(item?.sla ?? item?.principais?.sla ?? item?.extras?.sla ?? 0);
+    }
+
+    function textoSla(valor) {
+        return valor ? `${formatarNumero(valor)}h` : "-";
+    }
+
+    function mediaSlaColaborador(colaborador) {
+        const slas = colaborador.meses
+            .map(slaDoMes)
+            .filter(valor => Number.isFinite(valor) && valor > 0);
+
+        if (!slas.length) {
+            return 0;
+        }
+
+        return slas.reduce((total, valor) => total + valor, 0) / slas.length;
+    }
+
     function getChunksCollection(competencia) {
         return collection(db, "producao_competencias", competencia, "chunks");
     }
@@ -265,6 +285,7 @@
             producao: funcionario.totalPrincipal,
             meta: funcionario.metaTotal,
             percentual: funcionario.percentualGeral,
+            sla: Number(funcionario.principais?.sla ?? funcionario.extras?.sla ?? funcionario.sla ?? 0),
             principais: funcionario.principais,
             extras: funcionario.extras,
             metas: funcionario.metas,
@@ -292,6 +313,7 @@
         }
 
         preencherSelect();
+        preencherFiltroDestaques();
         renderizarMuralDestaques();
         setStatus("success", `${estado.colaboradores.size} colaboradores carregados.`);
     }
@@ -306,8 +328,34 @@
             .join("");
     }
 
-    function obterDestaquesDaUltimaCompetencia() {
-        const competencia = estado.competencias[estado.competencias.length - 1];
+    function preencherFiltroDestaques() {
+        const select = document.getElementById("filtroCompetenciaDestaques");
+
+        if (!select) {
+            return;
+        }
+
+        const ultima = estado.competencias[estado.competencias.length - 1] || "";
+        select.innerHTML = `<option value="">Última competência</option>` + estado.competencias
+            .slice()
+            .reverse()
+            .map(competencia => `<option value="${competencia}">${labelCompetencia(competencia)}</option>`)
+            .join("");
+        select.value = ultima;
+    }
+
+    function competenciaDestaquesSelecionada() {
+        return document.getElementById("filtroCompetenciaDestaques")?.value || estado.competencias[estado.competencias.length - 1];
+    }
+
+    function obterCompetenciaAnterior(competencia) {
+        const indice = estado.competencias.indexOf(competencia);
+
+        return indice > 0 ? estado.competencias[indice - 1] : null;
+    }
+
+    function obterDestaquesDaCompetencia(competenciaSelecionada = null) {
+        const competencia = competenciaSelecionada || estado.competencias[estado.competencias.length - 1];
 
         if (!competencia) {
             return {
@@ -340,6 +388,10 @@
             competencia,
             destaques
         };
+    }
+
+    function obterDestaquesDaUltimaCompetencia() {
+        return obterDestaquesDaCompetencia();
     }
 
     function renderizarMuralDestaques() {
@@ -385,9 +437,9 @@
         mural.innerHTML = cards;
     }
 
-    function obterEvolucoesMensais() {
-        const competenciaAtual = estado.competencias[estado.competencias.length - 1];
-        const competenciaAnterior = estado.competencias[estado.competencias.length - 2];
+    function obterEvolucoesMensais(competenciaSelecionada = null) {
+        const competenciaAtual = competenciaSelecionada || estado.competencias[estado.competencias.length - 1];
+        const competenciaAnterior = obterCompetenciaAnterior(competenciaAtual);
 
         if (!competenciaAtual || !competenciaAnterior) {
             return {
@@ -429,8 +481,8 @@
         };
     }
 
-    function obterDestaquesExtras() {
-        const competencia = estado.competencias[estado.competencias.length - 1];
+    function obterDestaquesExtras(competenciaSelecionada = null) {
+        const competencia = competenciaSelecionada || estado.competencias[estado.competencias.length - 1];
         const colaboradores = [...estado.colaboradores.values()];
         const maiorProducao = colaboradores
             .map(colaborador => {
@@ -452,7 +504,9 @@
 
         const maisConstante = colaboradores
             .map(colaborador => {
-                const ultimosMeses = colaborador.meses.slice(-3);
+                const ultimosMeses = colaborador.meses
+                    .filter(mes => !competencia || mes.competencia <= competencia)
+                    .slice(-3);
 
                 if (ultimosMeses.length < 3) {
                     return null;
@@ -477,8 +531,8 @@
         };
     }
 
-    function obterPodiosPorAtividade() {
-        const competencia = estado.competencias[estado.competencias.length - 1];
+    function obterPodiosPorAtividade(competenciaSelecionada = null) {
+        const competencia = competenciaSelecionada || estado.competencias[estado.competencias.length - 1];
         const atividades = [
             {
                 chave: "contratosMarcados",
@@ -497,6 +551,13 @@
                 titulo: "Tickets resolvidos",
                 descricao: "Quem mais respondeu tickets na competência.",
                 unidade: "tickets"
+            },
+            {
+                chave: "sla",
+                titulo: "SLA",
+                descricao: "Menores tempos de SLA na competência.",
+                unidade: "horas",
+                menorMelhor: true
             }
         ];
 
@@ -504,7 +565,9 @@
             const destaques = [...estado.colaboradores.values()]
                 .map(colaborador => {
                     const mes = colaborador.meses.find(item => item.competencia === competencia);
-                    const valor = Number(mes?.principais?.[atividade.chave] || 0) + Number(mes?.extras?.[atividade.chave] || 0);
+                    const valor = atividade.chave === "sla"
+                        ? slaDoMes(mes)
+                        : Number(mes?.principais?.[atividade.chave] || 0) + Number(mes?.extras?.[atividade.chave] || 0);
 
                     if (!mes || valor <= 0) {
                         return null;
@@ -518,7 +581,7 @@
                     };
                 })
                 .filter(Boolean)
-                .sort((a, b) => b.valor - a.valor)
+                .sort((a, b) => atividade.menorMelhor ? a.valor - b.valor : b.valor - a.valor)
                 .slice(0, 3);
 
             return {
@@ -567,10 +630,10 @@
                 const posicao = indice + 1;
                 const metrica = tipo === "evolucao"
                     ? `+${formatarNumero(destaque.evolucao)} p.p.`
-                    : `${formatarNumero(destaque.percentual)}%`;
+                    : (tipo === "sla" ? textoSla(destaque.sla) : `${formatarNumero(destaque.percentual)}%`);
                 const detalhe = tipo === "evolucao"
                     ? `${formatarNumero(destaque.percentualAnterior)}% para ${formatarNumero(destaque.percentualAtual)}%`
-                    : `${formatarNumero(destaque.producao)} de ${formatarNumero(destaque.meta)} pontos`;
+                    : (tipo === "sla" ? `Melhor SLA em ${destaque.detalhe}` : `${formatarNumero(destaque.producao)} de ${formatarNumero(destaque.meta)} pontos`);
 return `
                     <article class="podium-place ${classes[indice]} ${tipo === "evolucao" ? "growth" : ""}" style="--delay:${indice * 90}ms">
                         ${renderizarSeloPodio(posicao)}
@@ -607,13 +670,14 @@ return `
             .map(indice => {
                 const destaque = atividade.destaques[indice];
                 const posicao = indice + 1;
+                const valor = atividade.chave === "sla" ? textoSla(destaque.valor) : formatarNumero(destaque.valor);
 return `
                     <article class="podium-place activity ${classes[indice]}" style="--delay:${indice * 90}ms">
                         ${renderizarSeloPodio(posicao)}
                         ${avatarDestaque(destaque.nome)}
                         <strong title="${escaparHtml(destaque.nome)}">${escaparHtml(nomeCurto(destaque.nome))}</strong>
                         <small>${escaparHtml(destaque.celula || "-")}</small>
-                        <div class="podium-score">${formatarNumero(destaque.valor)}</div>
+                        <div class="podium-score">${valor}</div>
                         <p>${escaparHtml(destaque.unidade)}</p>
                     </article>
                 `;
@@ -633,8 +697,8 @@ return `
         `;
     }
 
-    function renderizarPodiosAtividades() {
-        const podios = obterPodiosPorAtividade()
+    function renderizarPodiosAtividades(competenciaSelecionada = null) {
+        const podios = obterPodiosPorAtividade(competenciaSelecionada)
             .map(renderizarPodioAtividade)
             .filter(Boolean)
             .join("");
@@ -648,7 +712,7 @@ return `
                 <div class="highlight-panel-heading">
                     <div>
                         <h3>Pódio por atividade</h3>
-                        <p>Top 3 por número absoluto na última competência publicada.</p>
+                        <p>Top 3 por atividade e menor tempo de SLA na competência selecionada.</p>
                     </div>
                 </div>
                 <div class="activity-podium-grid">${podios}</div>
@@ -685,9 +749,10 @@ return `
             return;
         }
 
-        const { competencia, destaques } = obterDestaquesDaUltimaCompetencia();
-        const evolucoes = obterEvolucoesMensais();
-        const extras = obterDestaquesExtras();
+        const competenciaSelecionada = competenciaDestaquesSelecionada();
+        const { competencia, destaques } = obterDestaquesDaCompetencia(competenciaSelecionada);
+        const evolucoes = obterEvolucoesMensais(competencia);
+        const extras = obterDestaquesExtras(competencia);
 
         if (subtitulo && competencia) {
             subtitulo.textContent = `Destaques em ${labelCompetencia(competencia)}, com ranking atual, evolução mensal e reconhecimentos extras.`;
@@ -701,7 +766,7 @@ return `
         mural.innerHTML = `
             ${renderizarPodio("Pódio da competência", `Melhores percentuais em ${labelCompetencia(competencia)}.`, destaques, "meta")}
             ${renderizarPodio("Pódio de evolução", evolucoes.competenciaAnterior ? `Maiores crescimentos de ${labelCompetencia(evolucoes.competenciaAnterior)} para ${labelCompetencia(evolucoes.competenciaAtual)}.` : "Maiores crescimentos de um mês para o outro.", evolucoes.destaques, "evolucao")}
-            ${renderizarPodiosAtividades()}
+            ${renderizarPodiosAtividades(competencia)}
             <section class="highlight-extras">
                 ${renderizarCardExtra("Maior produção", extras.maiorProducao, "producao")}
                 ${renderizarCardExtra("Maior constância", extras.maisConstante, "constancia")}
@@ -730,10 +795,17 @@ return `
             };
         }
 
-        if (diferenca <= -5) {
+        if (diferenca <= -5 && atual < 100) {
             return {
                 texto: "Em queda",
                 classe: "down"
+            };
+        }
+
+        if (diferenca <= -5) {
+            return {
+                texto: "Acima da meta",
+                classe: "neutral"
             };
         }
 
@@ -747,6 +819,24 @@ return `
         return [...meses].sort((a, b) => Number(b.percentual || 0) - Number(a.percentual || 0))[0] || null;
     }
 
+    function atividadesPrincipaisDoColaborador(colaborador) {
+        const atividades = new Set();
+
+        colaborador.meses.forEach(mes => {
+            Object.keys(mes.principais || {}).forEach(kpi => {
+                if (kpi !== "sla") {
+                    atividades.add(kpi);
+                }
+            });
+        });
+
+        return [...atividades].sort((a, b) => (nomesKpis[a] || a).localeCompare(nomesKpis[b] || b));
+    }
+
+    function valorAtividadeMes(mes, kpi) {
+        return Number(mes?.principais?.[kpi] || 0);
+    }
+
     function renderizarTabela(colaborador) {
         const tabela = document.getElementById("tabelaMensalColaborador");
 
@@ -756,6 +846,7 @@ return `
                 <td>${formatarNumero(item.producao)}</td>
                 <td>${formatarNumero(item.meta)}</td>
                 <td><span class="badge ${item.percentual >= 100 ? "badge-success" : item.percentual >= 80 ? "badge-warning" : "badge-danger"}">${formatarNumero(item.percentual)}%</span></td>
+                <td>${textoSla(slaDoMes(item))}</td>
             </tr>
         `).join("");
     }
@@ -828,6 +919,58 @@ return `
         });
     }
 
+    function renderizarResumoAtividades(colaborador) {
+        const cabecalho = document.getElementById("cabecalhoAtividadesColaborador");
+        const corpo = document.getElementById("resumoAtividadesColaborador");
+
+        if (!cabecalho || !corpo) {
+            return;
+        }
+
+        const atividades = atividadesPrincipaisDoColaborador(colaborador);
+        const meses = colaborador.meses;
+        const colunasAtividades = atividades
+            .map(kpi => `<th>${escaparHtml(nomesKpis[kpi] || kpi)}</th>`)
+            .join("");
+
+        cabecalho.innerHTML = `
+            <tr>
+                <th>Mês</th>
+                ${colunasAtividades}
+                <th>Total</th>
+            </tr>
+        `;
+
+        if (!atividades.length) {
+            corpo.innerHTML = `<tr><td colspan="2">Nenhuma atividade principal encontrada.</td></tr>`;
+            return;
+        }
+
+        const linhasMeses = meses.map(mes => {
+            const valores = atividades.map(kpi => valorAtividadeMes(mes, kpi));
+
+            return `
+                <tr>
+                    <td><strong>${labelCompetencia(mes.competencia)}</strong></td>
+                    ${valores.map(valor => `<td>${formatarNumero(valor)}</td>`).join("")}
+                    <td></td>
+                </tr>
+            `;
+        }).join("");
+
+        const totaisAtividades = atividades.map(kpi => meses.reduce((soma, mes) => soma + valorAtividadeMes(mes, kpi), 0));
+        const totalAno = totaisAtividades.reduce((soma, valor) => soma + valor, 0);
+
+        corpo.innerHTML = `
+            ${linhasMeses}
+            <tr class="activity-total-row">
+                <td><strong>Total do ano</strong></td>
+                ${totaisAtividades.map(valor => `<td><b>${formatarNumero(valor)}</b></td>`).join("")}
+                <td><b>${formatarNumero(totalAno)}</b></td>
+            </tr>
+        `;
+    }
+
     function selecionarColaborador(id) {
         const painel = document.getElementById("painelColaborador");
 
@@ -851,12 +994,15 @@ return `
         document.getElementById("colaboradorTendencia").textContent = tendencia.texto;
         document.getElementById("colaboradorTendencia").className = `trend-${tendencia.classe}`;
         document.getElementById("colaboradorMeses").textContent = formatarNumero(meses.length);
+        document.getElementById("colaboradorSla").textContent = textoSla(mediaSlaColaborador(colaborador));
 
         renderizarTabela(colaborador);
         renderizarGrafico(colaborador);
+        renderizarResumoAtividades(colaborador);
     }
 
     document.getElementById("selectColaborador").addEventListener("change", event => selecionarColaborador(event.target.value));
+    document.getElementById("filtroCompetenciaDestaques")?.addEventListener("change", renderizarMuralDestaques);
 
     carregarDados().catch(erro => {
         console.error(erro);

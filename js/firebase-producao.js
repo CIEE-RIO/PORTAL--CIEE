@@ -164,7 +164,9 @@
             ...(window.dadosProducao.parametros?.pesos || {})
         };
 
-        container.innerHTML = Object.keys(nomesKpis).map(kpi => `
+        container.innerHTML = Object.keys(nomesKpis)
+            .filter(kpi => kpi !== "sla")
+            .map(kpi => `
             <label class="parameter-weight-row">
                 <span>${nomesKpis[kpi]}</span>
                 <input type="number" min="0" step="0.1" data-kpi="${kpi}" value="${pesos[kpi] ?? 1}">

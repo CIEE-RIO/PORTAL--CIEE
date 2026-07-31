@@ -136,6 +136,59 @@
                             <button type="button" class="secondary-button" onclick="voltarKpisCelulaPadrao()">Voltar atividades ao padrão</button>
                         </div>
                     </article>
+
+                    <article class="parameter-card parameter-card-wide">
+                        <h3>Observação em rótulo da sazonalidade</h3>
+                        <div class="parameter-form">
+                            <label>
+                                <span>Dashboard</span>
+                                <select id="sazoLabelObsTipo">
+                                    <option value="estagio">Estágio</option>
+                                    <option value="aprendiz">Aprendiz</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>Gráfico</span>
+                                <select id="sazoLabelObsChart">
+                                    <option value="sazoChart">Sazonalidade de Virada</option>
+                                    <option value="finalMesChart">Sazonalidade Final de Mês</option>
+                                    <option value="comparativoChart">Ativos</option>
+                                    <option value="nominalChart">Nominal Sazo</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>Ano</span>
+                                <input type="number" id="sazoLabelObsAno" min="2020" max="2099" step="1">
+                            </label>
+                            <label>
+                                <span>Mês</span>
+                                <select id="sazoLabelObsMes">
+                                    <option value="1">Jan</option>
+                                    <option value="2">Fev</option>
+                                    <option value="3">Mar</option>
+                                    <option value="4">Abr</option>
+                                    <option value="5">Mai</option>
+                                    <option value="6">Jun</option>
+                                    <option value="7">Jul</option>
+                                    <option value="8">Ago</option>
+                                    <option value="9">Set</option>
+                                    <option value="10">Out</option>
+                                    <option value="11">Nov</option>
+                                    <option value="12">Dez</option>
+                                </select>
+                            </label>
+                            <label class="parameter-form-wide">
+                                <span>Observação</span>
+                                <input type="text" id="sazoLabelObsTexto" maxlength="42" placeholder="Ex.: campanha, feriado, ajuste de base...">
+                            </label>
+                        </div>
+                        <p class="parameter-help">Essa observação aparece no rótulo do ponto selecionado no dashboard de Sazonalidade. A relação é feita por dashboard, gráfico, ano e mês.</p>
+                        <div class="parameter-actions">
+                            <button type="button" onclick="salvarObservacaoRotuloSazonalidade()">Salvar observação</button>
+                            <button type="button" class="secondary-button" onclick="limparObservacaoRotuloSazonalidade()">Limpar observação</button>
+                        </div>
+                        <div id="sazoLabelObsStatus" class="status-message muted">Selecione o ponto do rótulo para consultar ou salvar uma observação.</div>
+                    </article>
                 </div>
 
                 <div class="parameter-history">
@@ -189,6 +242,80 @@
     <script src="../../js/dashboard.js"></script>
     <script src="../../js/importador.js"></script>
     <script src="../../js/firebase-producao.js"></script>
+    <script>
+        (function configurarObservacaoRotuloSazonalidade() {
+            const ids = {
+                tipo: "sazoLabelObsTipo",
+                chart: "sazoLabelObsChart",
+                ano: "sazoLabelObsAno",
+                mes: "sazoLabelObsMes",
+                texto: "sazoLabelObsTexto",
+                status: "sazoLabelObsStatus"
+            };
+
+            const campo = id => document.getElementById(id);
+            const chaveStorage = tipo => `portal-sazonalidade-observacoes-rotulo-${tipo || "estagio"}`;
+            const chaveRotulo = () => {
+                const chart = campo(ids.chart)?.value;
+                const ano = campo(ids.ano)?.value;
+                const mes = campo(ids.mes)?.value;
+
+                return chart && ano && mes ? `${chart}|${ano}|${mes}` : "";
+            };
+            const lerMapa = () => {
+                try {
+                    return JSON.parse(localStorage.getItem(chaveStorage(campo(ids.tipo)?.value)) || "{}") || {};
+                } catch {
+                    return {};
+                }
+            };
+            const gravarMapa = mapa => localStorage.setItem(chaveStorage(campo(ids.tipo)?.value), JSON.stringify(mapa));
+            const setStatus = texto => {
+                const status = campo(ids.status);
+                if (status) status.textContent = texto;
+            };
+
+            window.atualizarCampoObservacaoRotuloSazonalidade = function atualizarCampoObservacaoRotuloSazonalidade() {
+                const chave = chaveRotulo();
+                const texto = campo(ids.texto);
+
+                if (!chave || !texto) return;
+
+                texto.value = lerMapa()[chave] || "";
+                setStatus(texto.value ? "Observação carregada para este rótulo." : "Sem observação salva para este rótulo.");
+            };
+
+            window.salvarObservacaoRotuloSazonalidade = function salvarObservacaoRotuloSazonalidade() {
+                const chave = chaveRotulo();
+                const texto = campo(ids.texto)?.value.trim() || "";
+
+                if (!chave) {
+                    setStatus("Informe gráfico, ano e mês antes de salvar.");
+                    return;
+                }
+
+                const mapa = lerMapa();
+                if (texto) mapa[chave] = texto;
+                else delete mapa[chave];
+                gravarMapa(mapa);
+                setStatus(texto ? "Observação salva. Abra a Sazonalidade para ver no rótulo." : "Observação removida.");
+            };
+
+            window.limparObservacaoRotuloSazonalidade = function limparObservacaoRotuloSazonalidade() {
+                const texto = campo(ids.texto);
+                if (texto) texto.value = "";
+                window.salvarObservacaoRotuloSazonalidade();
+            };
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const hoje = new Date();
+                if (campo(ids.ano) && !campo(ids.ano).value) campo(ids.ano).value = String(hoje.getFullYear());
+                if (campo(ids.mes) && !campo(ids.mes).value) campo(ids.mes).value = String(hoje.getMonth() + 1);
+                [ids.tipo, ids.chart, ids.ano, ids.mes].forEach(id => campo(id)?.addEventListener("change", window.atualizarCampoObservacaoRotuloSazonalidade));
+                window.atualizarCampoObservacaoRotuloSazonalidade();
+            });
+        })();
+    </script>
     <script src="../../js/auth.js"></script>
 </body>
 </html>

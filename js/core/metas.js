@@ -62,7 +62,7 @@ function calcularMediaHistorica(historico, celula, kpi, competenciaAtual) {
 
     historico
         .filter(item => item.celula === celula)
-        .filter(item => !competenciaAtual || item.competencia !== competenciaAtual)
+        .filter(item => !competenciaAtual || !item.competencia || item.competencia < competenciaAtual)
         .forEach(item => {
             const competencia = item.competencia || "sem-competencia";
             const valor = valorHistoricoPorKpi(item, kpi);
@@ -90,7 +90,7 @@ function calcularMediaHistoricaGeralKpi(historico, kpi, competenciaAtual) {
     const porCompetencia = new Map();
 
     historico
-        .filter(item => !competenciaAtual || item.competencia !== competenciaAtual)
+        .filter(item => !competenciaAtual || !item.competencia || item.competencia < competenciaAtual)
         .forEach(item => {
             const competencia = item.competencia || "sem-competencia";
             const valor = valorHistoricoPorKpi(item, kpi);

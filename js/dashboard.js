@@ -391,6 +391,32 @@ function obterDetalheKpisFuncionario(funcionario) {
     }).join("");
 }
 
+function slaFuncionario(funcionario) {
+    return Number(funcionario?.principais?.sla ?? funcionario?.extras?.sla ?? funcionario?.sla ?? 0);
+}
+
+function classeSlaFuncionario(sla) {
+    if (sla <= 24) {
+        return "badge-success";
+    }
+
+    if (sla <= 48) {
+        return "badge-warning";
+    }
+
+    return "badge-danger";
+}
+
+function indicadorSlaFuncionario(funcionario) {
+    const sla = slaFuncionario(funcionario);
+
+    if (!sla) {
+        return `<span class="person-sla-chip badge-neutral">SLA não informado</span>`;
+    }
+
+    return `<span class="person-sla-chip ${classeSlaFuncionario(sla)}">SLA médio <b>${formatarNumero(sla)}h</b></span>`;
+}
+
 function comentarioFuncionario(funcionario) {
     return dadosProducao.comentarios?.[valorFuncionario(funcionario)] || "";
 }
@@ -540,6 +566,7 @@ function renderizarAnalisePessoasPorCelula() {
                             <div>
                                 <strong>${escaparHtml(funcionario.nome)}</strong>
                                 <span class="muted-line">${escaparHtml(funcionario.email || "-")}</span>
+                                ${indicadorSlaFuncionario(funcionario)}
                                 <div class="person-meta-control">
                                     <label>
                                         <span>Participação na competência</span>
@@ -986,35 +1013,27 @@ function limitarValor(valor, minimo, maximo) {
     return Math.min(maximo, Math.max(minimo, valor));
 }
 
-function obterDiagnosticoCapacidade(ocupacao) {
-    if (ocupacao < 70) {
+function obterDiagnosticoCapacidade(ocupacao, percentualAcimaFaixa = 0) {
+    if (ocupacao >= 100 || percentualAcimaFaixa >= 50) {
         return {
-            classe: "capacity-good",
-            titulo: "Há espaço para mais demanda",
-            texto: "A equipe está com folga operacional relevante."
+            classe: "capacity-danger",
+            titulo: "Pressão alta",
+            texto: "A equipe está acima da faixa sustentável de trabalho."
         };
     }
 
-    if (ocupacao < 90) {
-        return {
-            classe: "capacity-stable",
-            titulo: "Capacidade moderada",
-            texto: "Ainda existe margem, mas vale distribuir a demanda com atenção."
-        };
-    }
-
-    if (ocupacao <= 105) {
+    if (ocupacao >= 75 || percentualAcimaFaixa >= 35) {
         return {
             classe: "capacity-warning",
-            titulo: "Próximo do limite",
-            texto: "A equipe está operando perto da capacidade planejada."
+            titulo: "Pressão moderada",
+            texto: "A equipe está em uma faixa moderada: ainda há controle, mas novas demandas devem ser distribuídas com atenção."
         };
     }
 
     return {
-        classe: "capacity-danger",
-        titulo: "Sobrecarga operacional",
-        texto: "A demanda atual já passa da capacidade estimada."
+        classe: "capacity-good",
+        titulo: "Pressão baixa",
+        texto: "A equipe está abaixo da faixa sustentável estimada."
     };
 }
 
@@ -1129,35 +1148,27 @@ function renderizarForcaTrabalho() {
     `;
 }
 
-function obterDiagnosticoCapacidade(ocupacao) {
-    if (ocupacao < 65) {
+function obterDiagnosticoCapacidade(ocupacao, percentualAcimaFaixa = 0) {
+    if (ocupacao >= 100 || percentualAcimaFaixa >= 50) {
         return {
-            classe: "capacity-good",
-            titulo: "Há espaço para mais demanda",
-            texto: "A equipe está distante do teto produtivo estimado."
+            classe: "capacity-danger",
+            titulo: "Pressão alta",
+            texto: "A equipe está acima da faixa sustentável de trabalho."
         };
     }
 
-    if (ocupacao < 82) {
-        return {
-            classe: "capacity-stable",
-            titulo: "Capacidade saudável",
-            texto: "Existe margem para crescer com acompanhamento."
-        };
-    }
-
-    if (ocupacao <= 95) {
+    if (ocupacao >= 75 || percentualAcimaFaixa >= 35) {
         return {
             classe: "capacity-warning",
-            titulo: "Próximo do teto",
-            texto: "A equipe já opera perto do benchmark de alta produção."
+            titulo: "Pressão moderada",
+            texto: "A equipe está em uma faixa moderada: ainda há controle, mas novas demandas devem ser distribuídas com atenção."
         };
     }
 
     return {
-        classe: "capacity-danger",
-        titulo: "No teto ou acima",
-        texto: "A produção atual já encosta no teto produtivo estimado."
+        classe: "capacity-good",
+        titulo: "Pressão baixa",
+        texto: "A equipe está abaixo da faixa sustentável estimada."
     };
 }
 
@@ -1311,7 +1322,8 @@ const pesosEsforcoKpi = {
 
 const kpisIgnoradosEsforco = new Set([
     "satisfacaoPositiva",
-    "satisfacaoNegativa"
+    "satisfacaoNegativa",
+    "sla"
 ]);
 
 function obterPesoEsforcoKpi(kpi) {
@@ -1598,19 +1610,11 @@ function obterDiagnosticoCapacidade(ocupacao, percentualAcimaFaixa = 0) {
         };
     }
 
-    if (ocupacao >= 88 || percentualAcimaFaixa >= 35) {
+    if (ocupacao >= 75 || percentualAcimaFaixa >= 35) {
         return {
             classe: "capacity-warning",
             titulo: "Pressão moderada",
-            texto: "A equipe está em atenção, com pouca margem para aumentar demanda."
-        };
-    }
-
-    if (ocupacao >= 75) {
-        return {
-            classe: "capacity-stable",
-            titulo: "Pressão controlada",
-            texto: "A equipe tem demanda relevante, mas ainda dentro da faixa controlada."
+            texto: "A equipe está em uma faixa moderada: ainda há controle, mas novas demandas devem ser distribuídas com atenção."
         };
     }
 
@@ -1771,7 +1775,7 @@ function renderizarComposicaoEsforco(composicao) {
 
 function atividadesDisponiveisSimulacao() {
     return Object.keys(nomesKpis)
-        .filter(kpi => !kpisIgnoradosEsforco.has(kpi) && kpi !== "sla")
+        .filter(kpi => !kpisIgnoradosEsforco.has(kpi))
         .map(kpi => ({
             kpi,
             nome: nomesKpis[kpi] || kpi
