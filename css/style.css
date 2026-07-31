@@ -1741,9 +1741,9 @@ input[type="file"] {
     border-radius: 250px 250px 0 0;
     background:
         conic-gradient(from 270deg at 50% 100%,
-            #22d973 0deg 112.5deg,
-            #fff75a 112.5deg 150deg,
-            #ff5b62 150deg 180deg,
+            #22d973 0deg 135deg,
+            #fff75a 135deg 162deg,
+            #ff5b62 162deg 180deg,
             transparent 180deg 360deg);
     box-shadow:
         inset 0 5px 8px rgba(255, 255, 255, .55),
@@ -1762,6 +1762,7 @@ input[type="file"] {
     background:
         radial-gradient(circle at 50% 88%, #f9fcff 0 18%, transparent 19%),
         linear-gradient(180deg, #f9fcff, #edf5fb);
+    z-index: 2;
 }
 
 .capacity-gauge-ticks {
@@ -2248,9 +2249,20 @@ input[type="file"] {
 }
 
 .capacity-cell-meter {
+    position: relative;
     height: 9px;
     overflow: hidden;
     border-radius: 999px;
+    background: linear-gradient(90deg, var(--verde) 0%, #fff75a 75%, var(--vermelho) 100%);
+}
+
+.capacity-cell-meter::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: var(--cell-fill, 0%);
     background: #e6eef7;
 }
 
@@ -2258,7 +2270,6 @@ input[type="file"] {
     display: block;
     height: 100%;
     border-radius: inherit;
-    background: linear-gradient(90deg, var(--verde), var(--laranja), var(--vermelho));
 }
 
 .capacity-cell-row b {

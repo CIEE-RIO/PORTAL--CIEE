@@ -1017,8 +1017,16 @@ function obterDiagnosticoCapacidade(ocupacao, percentualAcimaFaixa = 0) {
     if (ocupacao >= 100 || percentualAcimaFaixa >= 50) {
         return {
             classe: "capacity-danger",
+            titulo: "Saturação operacional",
+            texto: "A equipe está acima da capacidade sustentável. Novas demandas devem ser redistribuídas ou acompanhadas com prioridade."
+        };
+    }
+
+    if (ocupacao >= 90) {
+        return {
+            classe: "capacity-danger",
             titulo: "Pressão alta",
-            texto: "A equipe está acima da faixa sustentável de trabalho."
+            texto: "A equipe está próxima do limite sustentável. Novas demandas devem ser direcionadas com cautela, priorizando células e colaboradores com maior folga operacional."
         };
     }
 
@@ -1081,15 +1089,15 @@ function renderizarForcaTrabalho() {
 
     const capacidade = calcularForcaTrabalho();
     const diagnostico = obterDiagnosticoCapacidade(capacidade.ocupacao);
-    const angulo = limitarValor((capacidade.ocupacao / 140) * 180, 0, 180);
+    const angulo = limitarValor((capacidade.ocupacao / 100) * 180, 0, 180);
     const celulas = capacidade.porCelula.map(celula => `
         <div class="capacity-cell-row">
             <div>
                 <strong>${escaparHtml(celula.celula)}</strong>
                 <span>${formatarNumero(celula.capacidadeRestante)} pontos livres</span>
             </div>
-            <div class="capacity-cell-meter">
-                <span style="width:${limitarValor(celula.ocupacao, 0, 140) / 140 * 100}%"></span>
+            <div class="capacity-cell-meter" style="--cell-fill:${limitarValor(celula.ocupacao, 0, 100)}%">
+                <span></span>
             </div>
             <b>${formatarNumero(celula.ocupacao)}%</b>
         </div>
@@ -1152,8 +1160,16 @@ function obterDiagnosticoCapacidade(ocupacao, percentualAcimaFaixa = 0) {
     if (ocupacao >= 100 || percentualAcimaFaixa >= 50) {
         return {
             classe: "capacity-danger",
+            titulo: "Saturação operacional",
+            texto: "A equipe está acima da capacidade sustentável. Novas demandas devem ser redistribuídas ou acompanhadas com prioridade."
+        };
+    }
+
+    if (ocupacao >= 90) {
+        return {
+            classe: "capacity-danger",
             titulo: "Pressão alta",
-            texto: "A equipe está acima da faixa sustentável de trabalho."
+            texto: "A equipe está próxima do limite sustentável. Novas demandas devem ser direcionadas com cautela, priorizando células e colaboradores com maior folga operacional."
         };
     }
 
@@ -1252,15 +1268,15 @@ function renderizarForcaTrabalho() {
 
     const capacidade = calcularForcaTrabalho();
     const diagnostico = obterDiagnosticoCapacidade(capacidade.ocupacao);
-    const angulo = limitarValor((capacidade.ocupacao / 120) * 180, 0, 180);
+    const angulo = limitarValor((capacidade.ocupacao / 100) * 180, 0, 180);
     const celulas = capacidade.porCelula.map(celula => `
         <div class="capacity-cell-row">
             <div>
                 <strong>${escaparHtml(celula.celula)}</strong>
                 <span>${formatarNumero(celula.capacidadeRestante)} pontos livres</span>
             </div>
-            <div class="capacity-cell-meter">
-                <span style="width:${limitarValor(celula.ocupacao, 0, 120) / 120 * 100}%"></span>
+            <div class="capacity-cell-meter" style="--cell-fill:${limitarValor(celula.ocupacao, 0, 100)}%">
+                <span></span>
             </div>
             <b>${formatarNumero(celula.ocupacao)}%</b>
         </div>
@@ -1485,15 +1501,15 @@ function renderizarForcaTrabalho() {
 
     const capacidade = calcularForcaTrabalho();
     const diagnostico = obterDiagnosticoCapacidade(capacidade.ocupacao);
-    const angulo = limitarValor((capacidade.ocupacao / 120) * 180, 0, 180);
+    const angulo = limitarValor((capacidade.ocupacao / 100) * 180, 0, 180);
     const celulas = capacidade.porCelula.map(celula => `
         <div class="capacity-cell-row">
             <div>
                 <strong>${escaparHtml(celula.celula)}</strong>
                 <span>${formatarNumero(celula.capacidadeRestante)} pontos ponderados livres</span>
             </div>
-            <div class="capacity-cell-meter">
-                <span style="width:${limitarValor(celula.ocupacao, 0, 120) / 120 * 100}%"></span>
+            <div class="capacity-cell-meter" style="--cell-fill:${limitarValor(celula.ocupacao, 0, 100)}%">
+                <span></span>
             </div>
             <b>${formatarNumero(celula.ocupacao)}%</b>
         </div>
@@ -1605,8 +1621,16 @@ function obterDiagnosticoCapacidade(ocupacao, percentualAcimaFaixa = 0) {
     if (ocupacao >= 100 || percentualAcimaFaixa >= 50) {
         return {
             classe: "capacity-danger",
+            titulo: "Saturação operacional",
+            texto: "A equipe está acima da capacidade sustentável. Novas demandas devem ser redistribuídas ou acompanhadas com prioridade."
+        };
+    }
+
+    if (ocupacao >= 90) {
+        return {
+            classe: "capacity-danger",
             titulo: "Pressão alta",
-            texto: "A equipe está acima da faixa sustentável de trabalho."
+            texto: "A equipe está próxima do limite sustentável. Novas demandas devem ser direcionadas com cautela, priorizando células e colaboradores com maior folga operacional."
         };
     }
 
@@ -2012,15 +2036,15 @@ function renderizarForcaTrabalho() {
 
     const capacidade = calcularForcaTrabalho();
     const diagnostico = obterDiagnosticoCapacidade(capacidade.ocupacao, capacidade.percentualAcimaFaixa);
-    const angulo = limitarValor((capacidade.ocupacao / 120) * 180, 0, 180);
+    const angulo = limitarValor((capacidade.ocupacao / 100) * 180, 0, 180);
     const celulas = capacidade.porCelula.map(celula => `
         <div class="capacity-cell-row" tabindex="0">
             <div>
                 <strong>${escaparHtml(celula.celula)}</strong>
                 <span>${celula.pessoasAcima} pessoa(s) acima da faixa</span>
             </div>
-            <div class="capacity-cell-meter">
-                <span style="width:${limitarValor(celula.ocupacao, 0, 120) / 120 * 100}%"></span>
+            <div class="capacity-cell-meter" style="--cell-fill:${limitarValor(celula.ocupacao, 0, 100)}%">
+                <span></span>
             </div>
             <b>${formatarNumero(celula.ocupacao)}%</b>
             ${renderizarDetalhePressaoCelula(celula)}
