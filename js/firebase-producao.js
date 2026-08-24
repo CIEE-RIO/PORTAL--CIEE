@@ -1,13 +1,13 @@
 (async function iniciarFirebaseProducao() {
     const firebaseApp = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    const firebaseAuth = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
     const firestore = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
 
     const {
         collection,
         doc,
+        getFirestore,
         getDocsFromServer,
-        initializeFirestore,
-        memoryLocalCache,
         onSnapshot,
         serverTimestamp,
         setDoc,
@@ -23,8 +23,11 @@
         appId: "1:881576324700:web:c68bdbe4c309d5fd1f4099"
     };
 
-    const app = firebaseApp.initializeApp(firebaseConfig);
-    const db = initializeFirestore(app, { localCache: memoryLocalCache() });
+    const app = firebaseApp.getApps().some(item => item.name === "[DEFAULT]")
+        ? firebaseApp.getApp()
+        : firebaseApp.initializeApp(firebaseConfig);
+    const auth = firebaseAuth.getAuth(app);
+    const db = getFirestore(app);
     const CHUNK_SIZE = 300;
     const docAtual = doc(db, "producao", "atual");
     const paginaImportacao = Boolean(document.getElementById("arquivoProducao"));
@@ -42,6 +45,19 @@
 
         resultado.className = `status-message ${tipo || "muted"}`;
         resultado.textContent = texto;
+    }
+
+    async function aguardarUsuarioAutenticado() {
+        if (auth.currentUser) {
+            return auth.currentUser;
+        }
+
+        return new Promise(resolve => {
+            const cancelar = firebaseAuth.onAuthStateChanged(auth, usuario => {
+                cancelar();
+                resolve(usuario || null);
+            });
+        });
     }
 
     function slug(texto) {
@@ -119,12 +135,16 @@
 
     function pesosPadraoVelocimetro() {
         return {
-            contratosMarcados: 1.4,
-            prorrogacoes: 1,
-            alteracoes: .7,
-            contratosDesligados: 1.3,
-            ticketsResolvidos: .9
+            contratosMarcados: 4,
+            prorrogacoes: 2,
+            alteracoes: 2,
+            contratosDesligados: 1.25,
+            ticketsResolvidos: .75
         };
+    }
+
+    function atividadesPesadasVelocimetro() {
+        return Object.keys(nomesKpis).filter(kpi => !["sla", "satisfacaoPositiva", "satisfacaoNegativa"].includes(kpi));
     }
 
     function preencherSelectKpisParametros() {
@@ -164,12 +184,11 @@
             ...(window.dadosProducao.parametros?.pesos || {})
         };
 
-        container.innerHTML = Object.keys(nomesKpis)
-            .filter(kpi => kpi !== "sla")
+        container.innerHTML = atividadesPesadasVelocimetro()
             .map(kpi => `
             <label class="parameter-weight-row">
                 <span>${nomesKpis[kpi]}</span>
-                <input type="number" min="0" step="0.1" data-kpi="${kpi}" value="${pesos[kpi] ?? 1}">
+                <input type="number" min="0" step="0.01" data-kpi="${kpi}" value="${pesos[kpi] ?? 0}">
             </label>
         `).join("");
     }
@@ -349,6 +368,8 @@
         });
     }
 
+    window.registrarHistoricoAtualizacaoProducao = registrarHistoricoParametros;
+
     async function renderizarHistoricoParametros() {
         const tabela = document.getElementById("historicoParametrosProducao");
 
@@ -465,7 +486,7 @@
         const pesos = {};
 
         inputs.forEach(input => {
-            pesos[input.dataset.kpi] = Number(input.value || 1);
+            pesos[input.dataset.kpi] = Number(input.value || 0);
         });
 
         await setDoc(doc(db, "parametros", "velocimetro"), {
@@ -620,6 +641,8 @@
         return chunks.flatMap(chunk => chunk.rows || []);
     }
 
+    window.carregarLinhasProducaoFirebase = carregarLinhasDaCompetencia;
+
     async function carregarComentarios(competencia) {
         const comentarios = {};
 
@@ -717,6 +740,9 @@
             .filter(Boolean)
             .sort((a, b) => a.localeCompare(b));
     }
+
+    window.listarCompetenciasProducaoFirebase = listarCompetenciasSalvas;
+    window.dispatchEvent(new Event("producaoFirebasePronto"));
 
     async function obterCompetenciaMaisRecente() {
         const competencias = await listarCompetenciasSalvas();
@@ -875,6 +901,10 @@
         await carregarComentarios(meta.competencia);
         atualizarDashboardProducao();
 
+        if (typeof window.preencherListasLancamentoManual === "function") {
+            window.preencherListasLancamentoManual();
+        }
+
         setStatus("success", `Produção ${meta.competencia} carregada do Firebase com ${formatarNumero(linhas.length)} registros.`);
     }
 
@@ -973,39 +1003,53 @@
         }
     }
 
-    configurarFiltroCompetencia();
+    async function iniciarLeituraProducao() {
+        const usuario = await aguardarUsuarioAutenticado();
 
-    if (paginaImportacao) {
-        carregarParametrosProducao().catch(console.error);
-    }
-
-    onSnapshot(docAtual, snapshot => {
-        if (!snapshot.exists()) {
-            setStatus("muted", "Firebase conectado. Nenhuma produção publicada ainda.");
+        if (!usuario) {
+            setStatus("error", "Sessão expirada. Saia e entre novamente para carregar a produção.");
             return;
         }
 
-        const meta = snapshot.data();
-        competenciaAtualVigente = meta.competencia;
+        configurarFiltroCompetencia();
 
         if (paginaImportacao) {
-            setStatus("success", `Firebase conectado. Competência vigente: ${meta.competencia}.`);
-            carregarParametrosProducao(meta.competencia).catch(console.error);
-            return;
+            carregarParametrosProducao().catch(console.error);
         }
 
-        if (paginaProducao && filtroCompetenciaManual) {
-            preencherFiltroCompetencias(document.getElementById("filtroCompetenciaVisualizada")?.value).catch(console.error);
-            return;
-        }
+        onSnapshot(docAtual, snapshot => {
+            if (!snapshot.exists()) {
+                setStatus("muted", "Firebase conectado. Nenhuma produção publicada ainda.");
+                return;
+            }
 
-        carregarCompetenciaMaisRecente().catch(erro => {
+            const meta = snapshot.data();
+            competenciaAtualVigente = meta.competencia;
+
+            if (paginaImportacao) {
+                setStatus("success", `Firebase conectado. Competência vigente: ${meta.competencia}.`);
+                carregarParametrosProducao(meta.competencia).catch(console.error);
+                return;
+            }
+
+            if (paginaProducao && filtroCompetenciaManual) {
+                preencherFiltroCompetencias(document.getElementById("filtroCompetenciaVisualizada")?.value).catch(console.error);
+                return;
+            }
+
+            carregarCompetenciaMaisRecente().catch(erro => {
+                console.error(erro);
+                setStatus("error", `Erro ao carregar Firebase: ${erro.message}`);
+            });
+        }, erro => {
             console.error(erro);
-            setStatus("error", `Erro ao carregar Firebase: ${erro.message}`);
+            setStatus("error", `Erro de conexão com Firebase: ${erro.message}`);
         });
-    }, erro => {
+    }
+
+    iniciarLeituraProducao().catch(erro => {
         console.error(erro);
-        setStatus("error", `Erro de conexão com Firebase: ${erro.message}`);
+        setStatus("error", `Erro ao iniciar leitura da produção: ${erro.message}`);
     });
 })().catch(erro => {
     console.error(erro);

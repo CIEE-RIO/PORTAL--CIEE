@@ -1,13 +1,13 @@
 ﻿(async function iniciarColaboradores() {
     const firebaseApp = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    const firebaseAuth = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
     const firestore = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
 
     const {
         collection,
         doc,
+        getFirestore,
         getDocsFromServer,
-        initializeFirestore,
-        memoryLocalCache
     } = firestore;
 
     const firebaseConfig = {
@@ -19,15 +19,20 @@
         appId: "1:881576324700:web:c68bdbe4c309d5fd1f4099"
     };
 
-    const app = firebaseApp.initializeApp(firebaseConfig, "colaboradores");
-    const db = initializeFirestore(app, { localCache: memoryLocalCache() });
+    const app = firebaseApp.getApps().some(item => item.name === "[DEFAULT]")
+        ? firebaseApp.getApp()
+        : firebaseApp.initializeApp(firebaseConfig);
+    const auth = firebaseAuth.getAuth(app);
+    const db = getFirestore(app);
     const estado = {
         competencias: [],
         colaboradores: new Map(),
-        grafico: null
+        grafico: null,
+        graficoExtras: null
     };
 
     const nomesMesesCurtos = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+    const coresAtividadesExtras = ["#003b71", "#f97316", "#16a34a", "#7c3aed", "#0891b2", "#dc2626", "#ca8a04", "#475569"];
 
     function setStatus(tipo, texto) {
         const status = document.getElementById("statusColaboradores");
@@ -38,6 +43,19 @@
 
         status.className = `status-message ${tipo || "muted"}`;
         status.textContent = texto;
+    }
+
+    async function aguardarUsuarioAutenticado() {
+        if (auth.currentUser) {
+            return auth.currentUser;
+        }
+
+        return new Promise(resolve => {
+            const cancelar = firebaseAuth.onAuthStateChanged(auth, usuario => {
+                cancelar();
+                resolve(usuario || null);
+            });
+        });
     }
 
     function escaparHtml(valor) {
@@ -250,15 +268,23 @@
     }
 
     function processarCompetencia(competencia, linhas, historicoAnterior) {
-        dadosProducao.competencia = competencia;
-        dadosProducao.historico = historicoAnterior;
+        const competenciaAnterior = dadosProducao.competencia;
+        const historicoGlobalAnterior = dadosProducao.historico;
 
-        const funcionarios = linhas
-            .filter(funcionario => funcionario.nome || funcionario.email)
-            .map(processarFuncionario);
-        const metas = calcularMetasPorCelula(funcionarios, historicoAnterior, competencia);
+        try {
+            dadosProducao.competencia = competencia;
+            dadosProducao.historico = historicoAnterior;
 
-        return aplicarMetasEDesempenho(funcionarios, metas);
+            const funcionarios = linhas
+                .filter(funcionario => funcionario.nome || funcionario.email)
+                .map(processarFuncionario);
+            const metas = calcularMetasPorCelula(funcionarios, historicoAnterior, competencia);
+
+            return aplicarMetasEDesempenho(funcionarios, metas);
+        } finally {
+            dadosProducao.competencia = competenciaAnterior;
+            dadosProducao.historico = historicoGlobalAnterior;
+        }
     }
 
     function adicionarAoMapa(funcionario, competencia) {
@@ -320,6 +346,11 @@
 
     function preencherSelect() {
         const select = document.getElementById("selectColaborador");
+
+        if (!select) {
+            return;
+        }
+
         const colaboradores = [...estado.colaboradores.values()]
             .sort((a, b) => a.nome.localeCompare(b.nome));
 
@@ -919,6 +950,178 @@ return `
         });
     }
 
+    function atividadesExtrasDoColaborador(colaborador) {
+        const atividadesIgnoradas = new Set(["sla", "satisfacaoPositiva", "satisfacaoNegativa"]);
+        const atividades = new Set();
+
+        colaborador.meses.forEach(mes => {
+            Object.keys(mes.extras || {}).forEach(kpi => {
+                const valor = Number(mes.extras?.[kpi] || 0);
+
+                if (!atividadesIgnoradas.has(kpi) && valor > 0) {
+                    atividades.add(kpi);
+                }
+            });
+        });
+
+        return [...atividades].sort((a, b) => (nomesKpis[a] || a).localeCompare(nomesKpis[b] || b));
+    }
+
+    function renderizarGraficoAtividadesExtras(colaborador) {
+        const canvas = document.getElementById("graficoAtividadesExtrasColaborador");
+
+        if (!canvas || typeof Chart === "undefined") {
+            return;
+        }
+
+        if (estado.graficoExtras) {
+            estado.graficoExtras.destroy();
+        }
+
+        const atividades = atividadesExtrasDoColaborador(colaborador);
+        const meses = colaborador.meses;
+        const percentualExtrasPorMes = meses.map(mes => {
+            const totalExtras = Object.entries(mes.extras || {})
+                .filter(([kpi]) => !["sla", "satisfacaoPositiva", "satisfacaoNegativa"].includes(kpi))
+                .reduce((soma, [, valor]) => soma + Number(valor || 0), 0);
+            const totalPrincipais = Object.values(mes.principais || {})
+                .reduce((soma, valor) => soma + Number(valor || 0), 0);
+            const totalAtividades = totalPrincipais + totalExtras;
+
+            return totalAtividades ? (totalExtras / totalAtividades) * 100 : 0;
+        });
+
+        if (!atividades.length) {
+            estado.graficoExtras = new Chart(canvas.getContext("2d"), {
+                type: "bar",
+                data: {
+                    labels: meses.map(item => labelCompetencia(item.competencia)),
+                    datasets: [{
+                        label: "Sem atividades não principais",
+                        data: meses.map(() => 0),
+                        borderColor: "#d8e3ef",
+                        backgroundColor: "rgba(216, 227, 239, .45)"
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false },
+                        datalabels: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+            return;
+        }
+
+        estado.graficoExtras = new Chart(canvas.getContext("2d"), {
+            type: "bar",
+            data: {
+                labels: meses.map(item => labelCompetencia(item.competencia)),
+                datasets: [
+                    ...atividades.map((kpi, indice) => {
+                        const cor = coresAtividadesExtras[indice % coresAtividadesExtras.length];
+
+                        return {
+                            type: "bar",
+                            label: nomesKpis[kpi] || kpi,
+                            data: meses.map(mes => Number(mes.extras?.[kpi] || 0)),
+                            borderColor: cor,
+                            backgroundColor: `${cor}CC`,
+                            borderWidth: 1,
+                            borderRadius: 6,
+                            yAxisID: "y"
+                        };
+                    }),
+                    {
+                        type: "line",
+                        label: "% não principais no total",
+                        data: percentualExtrasPorMes,
+                        borderColor: "#111827",
+                        backgroundColor: "rgba(17, 24, 39, .12)",
+                        borderWidth: 3,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        tension: .32,
+                        fill: false,
+                        yAxisID: "yPercentual"
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: "bottom",
+                        labels: {
+                            usePointStyle: true,
+                            boxWidth: 8,
+                            font: { weight: "bold", size: 11 }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: contexto => contexto.dataset.yAxisID === "yPercentual"
+                                ? `${contexto.dataset.label}: ${formatarNumero(contexto.parsed.y)}%`
+                                : `${contexto.dataset.label}: ${formatarNumero(contexto.parsed.y)}`
+                        }
+                    },
+                    datalabels: {
+                        display: contexto => Number(contexto.dataset.data[contexto.dataIndex] || 0) > 0,
+                        formatter: (valor, contexto) => contexto.dataset.yAxisID === "yPercentual"
+                            ? `${formatarNumero(valor)}%`
+                            : formatarNumero(valor),
+                        backgroundColor: contexto => contexto.dataset.borderColor,
+                        color: "#fff",
+                        borderRadius: 5,
+                        padding: 4,
+                        align: "top",
+                        anchor: "end",
+                        font: { weight: "bold", size: 9 },
+                        clip: false,
+                        clamp: true
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        position: "left",
+                        title: {
+                            display: true,
+                            text: "Atividades não principais"
+                        },
+                        ticks: {
+                            callback: valor => formatarNumero(valor)
+                        }
+                    },
+                    yPercentual: {
+                        beginAtZero: true,
+                        position: "right",
+                        grid: { drawOnChartArea: false },
+                        title: {
+                            display: true,
+                            text: "% não principais no total"
+                        },
+                        ticks: {
+                            callback: valor => `${formatarNumero(valor)}%`
+                        }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+
     function renderizarResumoAtividades(colaborador) {
         const cabecalho = document.getElementById("cabecalhoAtividadesColaborador");
         const corpo = document.getElementById("resumoAtividadesColaborador");
@@ -998,13 +1201,21 @@ return `
 
         renderizarTabela(colaborador);
         renderizarGrafico(colaborador);
+        renderizarGraficoAtividadesExtras(colaborador);
         renderizarResumoAtividades(colaborador);
     }
 
-    document.getElementById("selectColaborador").addEventListener("change", event => selecionarColaborador(event.target.value));
+    document.getElementById("selectColaborador")?.addEventListener("change", event => selecionarColaborador(event.target.value));
     document.getElementById("filtroCompetenciaDestaques")?.addEventListener("change", renderizarMuralDestaques);
 
-    carregarDados().catch(erro => {
+    aguardarUsuarioAutenticado().then(usuario => {
+        if (!usuario) {
+            setStatus("error", "Sessão expirada. Saia e entre novamente para carregar colaboradores.");
+            return null;
+        }
+
+        return carregarDados();
+    }).catch(erro => {
         console.error(erro);
         setStatus("error", `Erro ao carregar colaboradores: ${erro.message}`);
     });

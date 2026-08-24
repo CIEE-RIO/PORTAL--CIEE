@@ -20,7 +20,7 @@
                 <a href="../sazonalidade/index.html"><span class="nav-icon nav-icon-season" aria-hidden="true"></span>Sazonalidade</a>
                 <a href="../desligamentos/index.html"><span class="nav-icon nav-icon-exit" aria-hidden="true"></span>Desligamentos</a>
                 <a href="../producao/index.html"><span class="nav-icon nav-icon-production" aria-hidden="true"></span>Produção</a>
-                <a href="../colaboradores/index.html"><span class="nav-icon nav-icon-people" aria-hidden="true"></span>Colaboradores</a>
+                <a href="../colaboradores/index.html"><span class="nav-icon nav-icon-people" aria-hidden="true"></span>Mural de destaques</a>
                 <a href="../importar-producao/index.html"><span class="nav-icon nav-icon-import" aria-hidden="true"></span>Importar dados</a>
                 <a href="../memoria-calculo/index.html"><span class="nav-icon nav-icon-memory" aria-hidden="true"></span>Memória de cálculo</a>
                 <a id="linkUsuariosPortal" class="active" href="./index.html"><span class="nav-icon nav-icon-users" aria-hidden="true"></span>Usuários</a>
@@ -31,8 +31,8 @@
             <header class="topbar">
                 <div>
                     <span class="eyebrow">Administração</span>
-                    <h1>Cadastro de logins</h1>
-                    <p>Crie acessos, defina hierarquia e selecione quais módulos cada perfil de visualização pode abrir.</p>
+                    <h1>Cadastro de acessos</h1>
+                    <p>Defina hierarquia e selecione quais módulos cada perfil de visualização pode abrir.</p>
                 </div>
             </header>
 
@@ -40,8 +40,8 @@
                 <article class="dashboard user-form-card">
                     <div class="section-heading">
                         <div>
-                            <h2>Novo login</h2>
-                            <p>Admins acessam tudo. Perfis de visualização acessam apenas os módulos selecionados.</p>
+                            <h2>Novo acesso</h2>
+                            <p>Admins acessam tudo. Perfis de visualização acessam apenas os módulos selecionados. A senha fica no Firebase Authentication.</p>
                         </div>
                     </div>
 
@@ -51,12 +51,12 @@
                             <input type="text" id="usuarioNome" required>
                         </label>
                         <label>
-                            <span>Usuario</span>
-                            <input type="text" id="usuarioLogin" required>
+                            <span>E-mail</span>
+                            <input type="email" id="usuarioLogin" required>
                         </label>
                         <label>
-                            <span>Senha</span>
-                            <input type="password" id="usuarioSenha" required>
+                            <span>Apelido de acesso</span>
+                            <input type="text" id="usuarioApelido" placeholder="Ex.: operacao">
                         </label>
                         <label>
                             <span>Perfil</span>
@@ -65,19 +65,23 @@
                                 <option value="admin">Admin</option>
                             </select>
                         </label>
+                        <label class="user-write-access">
+                            <input type="checkbox" id="usuarioPodeEscrever">
+                            <span>Pode alterar dados</span>
+                        </label>
                         <div class="user-module-access" id="usuarioModulosBox">
                             <span>Módulos permitidos</span>
                             <div id="usuarioModulos" class="parameter-checkbox-list"></div>
                         </div>
-                        <button type="submit">Cadastrar login</button>
+                        <button type="submit">Cadastrar acesso</button>
                     </form>
                 </article>
 
                 <article class="dashboard">
                     <div class="section-heading">
                         <div>
-                            <h2>Logins cadastrados</h2>
-                            <p>Lista salva no Firebase para funcionar no link publicado.</p>
+                            <h2>Acessos cadastrados</h2>
+                            <p>Perfis salvos no Firebase para funcionar no link publicado.</p>
                         </div>
                     </div>
 
@@ -86,15 +90,16 @@
                             <thead>
                                 <tr>
                                     <th>Nome</th>
-                                    <th>Usuario</th>
+                                    <th>E-mail</th>
+                                    <th>Apelido</th>
                                     <th>Perfil</th>
-                                    <th>Senha</th>
+                                    <th>Alteração</th>
                                     <th>Módulos</th>
                                     <th>Ação</th>
                                 </tr>
                             </thead>
                             <tbody id="tabelaUsuarios">
-                                <tr><td colspan="6">Nenhum usuário cadastrado.</td></tr>
+                                <tr><td colspan="6">Nenhum acesso cadastrado.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -107,3 +112,4 @@
     <script src="../../js/usuarios.js"></script>
 </body>
 </html>
+

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Colaboradores | Portal Operacional</title>
+    <title>Mural de Destaques | Portal Operacional</title>
     <link rel="stylesheet" href="../../css/style.css?v=20260731-2">
 </head>
 <body>
@@ -20,7 +20,7 @@
                 <a href="../sazonalidade/index.html"><span class="nav-icon nav-icon-season" aria-hidden="true"></span>Sazonalidade</a>
                 <a href="../desligamentos/index.html"><span class="nav-icon nav-icon-exit" aria-hidden="true"></span>Desligamentos</a>
                 <a href="../producao/index.html"><span class="nav-icon nav-icon-production" aria-hidden="true"></span>Produção</a>
-                <a class="active" href="./index.html"><span class="nav-icon nav-icon-people" aria-hidden="true"></span>Colaboradores</a>
+                <a class="active" href="./index.html"><span class="nav-icon nav-icon-people" aria-hidden="true"></span>Mural de destaques</a>
                 <a href="../importar-producao/index.html"><span class="nav-icon nav-icon-import" aria-hidden="true"></span>Importar dados</a>
                 <a href="../memoria-calculo/index.html"><span class="nav-icon nav-icon-memory" aria-hidden="true"></span>Memória de cálculo</a>
                 <a id="linkUsuariosPortal" href="../usuarios/index.html"><span class="nav-icon nav-icon-users" aria-hidden="true"></span>Usuários</a>
@@ -30,124 +30,12 @@
         <main class="content">
             <header class="topbar">
                 <div>
-                    <span class="eyebrow">Perfil do colaborador</span>
-                    <h1>Colaboradores</h1>
-                    <p>Selecione um colaborador para visualizar evolução mensal, melhor mês e tendência.</p>
+                    <span class="eyebrow">Reconhecimento da equipe</span>
+                    <h1>Mural de destaques</h1>
+                    <p>Ranking visual dos destaques por competência, evolução e atividades.</p>
                 </div>
             </header>
 
-            <section class="dashboard">
-                <div class="section-heading">
-                    <div>
-                        <h2>Selecionar colaborador</h2>
-                        <p>Os nomes são carregados a partir das bases de produção salvas no Firebase.</p>
-                    </div>
-                    <label class="import-field collaborator-select-field">
-                        <span>Colaborador</span>
-                        <select id="selectColaborador">
-                            <option value="">Carregando colaboradores...</option>
-                        </select>
-                    </label>
-                </div>
-
-                <div id="statusColaboradores" class="status-message muted">
-                    Buscando dados de produção...
-                </div>
-            </section>
-
-            <section id="painelColaborador" class="collaborator-panel" hidden>
-                <article class="dashboard collaborator-profile-card">
-                    <div class="collaborator-hero">
-                        <span id="colaboradorAvatar" class="avatar avatar-lg"><b>?</b></span>
-                        <div>
-                            <span class="eyebrow">Colaborador</span>
-                            <h2 id="colaboradorNome">-</h2>
-                            <p id="colaboradorSubtitulo">-</p>
-                        </div>
-                    </div>
-
-                    <div class="kpi-grid kpi-grid-wide">
-                        <article class="kpi-card">
-                            <span>Última meta</span>
-                            <strong id="colaboradorUltimaMeta">0%</strong>
-                        </article>
-                        <article class="kpi-card">
-                            <span>Melhor mês</span>
-                            <strong id="colaboradorMelhorMes">-</strong>
-                        </article>
-                        <article class="kpi-card">
-                            <span>Tendência</span>
-                            <strong id="colaboradorTendencia">-</strong>
-                        </article>
-                        <article class="kpi-card">
-                            <span>Meses avaliados</span>
-                            <strong id="colaboradorMeses">0</strong>
-                        </article>
-                        <article class="kpi-card">
-                            <span>SLA médio</span>
-                            <strong id="colaboradorSla">-</strong>
-                        </article>
-                    </div>
-                </article>
-
-                <section class="content-grid collaborator-grid">
-                    <article class="dashboard">
-                        <div class="section-heading">
-                            <div>
-                                <h2>Comparativo mensal</h2>
-                                <p>Percentual de cumprimento da meta mês a mês.</p>
-                            </div>
-                        </div>
-                        <div class="chart-card">
-                            <canvas id="graficoColaborador"></canvas>
-                        </div>
-                    </article>
-
-                    <article class="dashboard collaborator-activity-panel">
-                        <div class="section-heading">
-                            <div>
-                                <h2>Resumo por atividade</h2>
-                                <p>Números absolutos das atividades principais em cada competência.</p>
-                            </div>
-                        </div>
-                        <div class="table-wrap collaborator-activity-wrap">
-                            <table>
-                                <thead id="cabecalhoAtividadesColaborador">
-                                    <tr><th>Mês</th><th>Total</th></tr>
-                                </thead>
-                                <tbody id="resumoAtividadesColaborador">
-                                    <tr><td colspan="2">Selecione um colaborador.</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </article>
-
-                    <article class="dashboard">
-                        <div class="section-heading">
-                            <div>
-                                <h2>Resumo mensal</h2>
-                                <p>Produção, meta individual e percentual por competência.</p>
-                            </div>
-                        </div>
-                        <div class="table-wrap collaborator-table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Mês</th>
-                                        <th>Produção</th>
-                                        <th>Meta</th>
-                                        <th>% Meta</th>
-                                        <th>SLA</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tabelaMensalColaborador">
-                                    <tr><td colspan="5">Selecione um colaborador.</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </article>
-                </section>
-            </section>
             <section class="dashboard highlights-board">
                 <div class="section-heading">
                     <div>

@@ -143,11 +143,11 @@ function renderizarLinhaVazia(colunas, texto = "Aguardando importação.") {
     return `<tr><td colspan="${colunas}">${texto}</td></tr>`;
 }
 
-function criarCardIndicador(titulo, valor, destaque = false) {
+function criarCardIndicador(titulo, valor, destaque = false, unidade = "") {
     return `
         <article class="kpi-card ${destaque ? "kpi-card-highlight" : ""}">
             <span>${titulo}</span>
-            <strong>${formatarNumero(valor)}</strong>
+            <strong>${formatarNumero(valor)}${unidade ? ` ${unidade}` : ""}</strong>
         </article>
     `;
 }
@@ -158,7 +158,7 @@ function criarCardsProducoes(totais) {
             const totalFuncionarios = Number(dadosProducao.dashboard.totalFuncionarios || 0);
             const mediaSla = totalFuncionarios ? (Number(totais.sla || 0) / totalFuncionarios) : 0;
 
-            return criarCardIndicador("SLA médio", mediaSla);
+            return criarCardIndicador("SLA médio", mediaSla, false, "horas");
         }
 
         return criarCardIndicador(nomesKpis[kpi], totais[kpi] || 0);
@@ -174,7 +174,7 @@ function renderizarIndicadoresProducao() {
 
     const totais = dadosProducao.dashboard.totaisKpis || {};
     const cards = [
-        criarCardIndicador("Funcionários", dadosProducao.dashboard.totalFuncionarios, true),
+        criarCardIndicador("Colaboradores / Estagiários", dadosProducao.dashboard.totalFuncionarios, true),
         criarCardIndicador("Células ativas", dadosProducao.dashboard.totalCelulas, true),
         ...criarCardsProducoes(totais)
     ];
@@ -362,8 +362,13 @@ function renderizarRankingDestaquesKpi() {
         <tr>
             <td class="rank-position">${indice + 1}</td>
             <td class="rank-person">
-                <strong title="${escaparHtml(item.funcionario.nome)}">${escaparHtml(nomeCurtoFuncionario(item.funcionario.nome))}</strong>
-                <span>${escaparHtml(item.funcionario.celula)}</span>
+                <div class="person-with-avatar">
+                    ${avatarFuncionario(item.funcionario)}
+                    <div>
+                        <strong title="${escaparHtml(item.funcionario.nome)}">${escaparHtml(nomeCurtoFuncionario(item.funcionario.nome))}</strong>
+                        <span>${escaparHtml(item.funcionario.celula)}</span>
+                    </div>
+                </div>
             </td>
             <td>
                 <strong>${nomesKpis[item.kpi] || item.kpi}</strong>
@@ -1329,11 +1334,11 @@ function renderizarForcaTrabalho() {
 }
 
 const pesosEsforcoKpi = {
-    contratosMarcados: 1.4,
-    prorrogacoes: 1,
-    alteracoes: .7,
-    contratosDesligados: 1.3,
-    ticketsResolvidos: .9
+    contratosMarcados: 4,
+    prorrogacoes: 2,
+    alteracoes: 2,
+    contratosDesligados: 1.25,
+    ticketsResolvidos: .75
 };
 
 const kpisIgnoradosEsforco = new Set([
@@ -1343,7 +1348,9 @@ const kpisIgnoradosEsforco = new Set([
 ]);
 
 function obterPesoEsforcoKpi(kpi) {
-    return Number(dadosProducao.parametros?.pesos?.[kpi] ?? pesosEsforcoKpi[kpi] ?? 1);
+    const pesosConfigurados = dadosProducao.parametros?.pesos || {};
+
+    return Math.max(0, Number(pesosConfigurados[kpi] ?? pesosEsforcoKpi[kpi] ?? 1));
 }
 
 function listarAtividadesEsforcoFuncionario(funcionario) {

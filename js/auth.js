@@ -4,14 +4,19 @@
         { id: "sazonalidade", nome: "Sazonalidade", caminho: "modulos/sazonalidade/index.html" },
         { id: "desligamentos", nome: "Desligamentos", caminho: "modulos/desligamentos/index.html" },
         { id: "producao", nome: "Produção", caminho: "modulos/producao/index.html" },
-        { id: "colaboradores", nome: "Colaboradores", caminho: "modulos/colaboradores/index.html" },
+        { id: "colaboradores", nome: "Mural de destaques", caminho: "modulos/colaboradores/index.html" },
         { id: "importar-producao", nome: "Importar dados", caminho: "modulos/importar-producao/index.html" },
         { id: "memoria-calculo", nome: "Memória de cálculo", caminho: "modulos/memoria-calculo/index.html" },
         { id: "usuarios", nome: "Usuários", caminho: "modulos/usuarios/index.html", admin: true }
     ];
     const USUARIOS_PADRAO = [
-        { usuario: "Rodrigo", senha: "000", nome: "Rodrigo", perfil: "admin", modulos: ["todos"], fixo: true }
+        { usuario: "rodrigob@cieerj.org.br", email: "rodrigob@cieerj.org.br", apelido: "rodrigob", nome: "Rodrigo B", perfil: "admin", modulos: ["todos"], podeEscrever: true, fixo: true }
     ];
+    const APELIDOS_LOGIN = {
+        rodrigob: "rodrigob@cieerj.org.br",
+        operacao: "operacao@portal.local",
+        comercial: "comercial@portal.local"
+    };
     const CHAVE_SESSAO = "portal_ciee_sessao";
     const COLECAO_USUARIOS = "usuarios_login";
     const paginaLogin = location.pathname.toLowerCase().endsWith("/login.html");
@@ -19,6 +24,7 @@
     const caminhoLogin = `${caminhoBase()}login.html`;
     const caminhoInicial = `${caminhoBase()}index.html`;
     let firebaseDbPromise = null;
+    let firebaseAuthPromise = null;
 
     const firebaseConfig = {
         apiKey: "AIzaSyD7OHPZ8flOUGyCrdL3Sp-ZTASj03Dbn94",
@@ -42,6 +48,18 @@
             .replace(/(^-|-$)/g, "");
     }
 
+    function normalizarEmail(valor) {
+        return String(valor || "").trim().toLowerCase();
+    }
+
+    function idUsuarioPerfil(usuario) {
+        return normalizarEmail(usuario?.email || usuario?.usuario);
+    }
+
+    function normalizarApelido(valor) {
+        return normalizarId(valor);
+    }
+
     function normalizarPerfil(perfil) {
         return perfil === "admin" ? "admin" : "visualizacao";
     }
@@ -60,11 +78,17 @@
 
     function normalizarUsuario(usuario) {
         const perfil = normalizarPerfil(usuario?.perfil);
+        const email = normalizarEmail(usuario?.email || usuario?.usuario);
 
         return {
             ...usuario,
+            id: usuario?.id || email || usuario?.usuario,
+            usuario: email || usuario?.usuario || usuario?.id,
+            email,
+            apelido: normalizarApelido(usuario?.apelido),
             perfil,
-            modulos: perfil === "admin" ? ["todos"] : normalizarModulosUsuario({ ...usuario, perfil })
+            modulos: perfil === "admin" ? ["todos"] : normalizarModulosUsuario({ ...usuario, perfil }),
+            podeEscrever: perfil === "admin" || usuario?.podeEscrever === true
         };
     }
 
@@ -173,6 +197,55 @@
         return firebaseDbPromise;
     }
 
+    async function obterFirebaseAuth() {
+        if (firebaseAuthPromise) {
+            return firebaseAuthPromise;
+        }
+
+        firebaseAuthPromise = Promise.all([
+            import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
+            import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js")
+        ]).then(([firebaseApp, firebaseAuth]) => {
+            const app = firebaseApp.getApps().length
+                ? firebaseApp.getApp()
+                : firebaseApp.initializeApp(firebaseConfig);
+            const auth = firebaseAuth.getAuth(app);
+
+            return { auth, firebaseAuth };
+        });
+
+        return firebaseAuthPromise;
+    }
+
+    async function obterUsuarioAuthAtual() {
+        const { auth, firebaseAuth } = await obterFirebaseAuth();
+
+        if (auth.currentUser) {
+            return auth.currentUser;
+        }
+
+        return new Promise(resolve => {
+            const cancelar = firebaseAuth.onAuthStateChanged(auth, usuario => {
+                cancelar();
+                resolve(usuario || null);
+            });
+        });
+    }
+
+    async function exigirUsuarioAuthAtivo() {
+        const sessao = obterSessao();
+        const usuarioAuth = await obterUsuarioAuthAtual();
+        const emailSessao = normalizarEmail(sessao?.email || sessao?.usuario);
+        const emailAuth = normalizarEmail(usuarioAuth?.email);
+
+        if (!usuarioAuth || (emailSessao && emailAuth !== emailSessao)) {
+            sessionStorage.removeItem(CHAVE_SESSAO);
+            throw new Error("Sessão Firebase expirada. Saia, entre novamente e tente salvar de novo.");
+        }
+
+        return usuarioAuth;
+    }
+
     function obterSessao() {
         try {
             return JSON.parse(sessionStorage.getItem(CHAVE_SESSAO) || "null");
@@ -183,6 +256,10 @@
 
     async function listarUsuariosFirebase() {
         try {
+            if (!paginaLogin) {
+                await exigirUsuarioAuthAtivo();
+            }
+
             const { db, firestore } = await obterFirebase();
             const snap = await firestore.getDocs(firestore.collection(db, COLECAO_USUARIOS));
             const usuarios = [];
@@ -190,7 +267,7 @@
             snap.forEach(item => {
                 const data = item.data();
 
-                if (data.usuario && data.senha) {
+                if (data.email || data.usuario) {
                     usuarios.push(normalizarUsuario({
                         id: item.id,
                         ...data
@@ -209,13 +286,18 @@
         const mapa = new Map();
         const cadastrados = await listarUsuariosFirebase();
 
-        USUARIOS_PADRAO.forEach(usuario => mapa.set(usuario.usuario.toLowerCase(), normalizarUsuario(usuario)));
+        USUARIOS_PADRAO.forEach(usuario => mapa.set(idUsuarioPerfil(usuario), normalizarUsuario(usuario)));
         cadastrados.forEach(usuario => {
-            const chave = usuario.usuario.toLowerCase();
+            const chave = idUsuarioPerfil(usuario);
             const existente = mapa.get(chave) || {};
+            const protegido = Boolean(existente.fixo);
+
             mapa.set(chave, normalizarUsuario({
                 ...existente,
                 ...usuario,
+                perfil: protegido ? "admin" : usuario.perfil,
+                modulos: protegido ? ["todos"] : usuario.modulos,
+                podeEscrever: protegido ? true : usuario.podeEscrever,
                 fixo: Boolean(existente.fixo || usuario.fixo)
             }));
         });
@@ -224,55 +306,91 @@
     }
 
     async function salvarUsuario(usuario) {
+        await exigirUsuarioAuthAtivo();
+
         const { db, firestore } = await obterFirebase();
-        const id = normalizarId(usuario.usuario);
+        const email = normalizarEmail(usuario.email || usuario.usuario);
+        const id = email;
 
         if (!id) {
-            throw new Error("Usuario invalido.");
+            throw new Error("E-mail invalido.");
         }
 
         await firestore.setDoc(firestore.doc(db, COLECAO_USUARIOS, id), {
             nome: usuario.nome,
-            usuario: usuario.usuario,
-            senha: usuario.senha,
+            usuario: email,
+            email,
+            apelido: normalizarApelido(usuario.apelido),
             perfil: normalizarPerfil(usuario.perfil),
             modulos: normalizarModulosUsuario(usuario),
+            podeEscrever: normalizarPerfil(usuario.perfil) === "admin" || usuario.podeEscrever === true,
             atualizadoEm: firestore.serverTimestamp()
         }, { merge: true });
     }
 
     async function removerUsuario(usuario) {
+        await exigirUsuarioAuthAtivo();
+
         const { db, firestore } = await obterFirebase();
-        await firestore.deleteDoc(firestore.doc(db, COLECAO_USUARIOS, normalizarId(usuario)));
+        await firestore.deleteDoc(firestore.doc(db, COLECAO_USUARIOS, String(usuario || "")));
     }
 
     function salvarSessao(usuario) {
         const usuarioNormalizado = normalizarUsuario(usuario);
 
         sessionStorage.setItem(CHAVE_SESSAO, JSON.stringify({
-            usuario: usuario.usuario,
+            usuario: usuario.usuario || usuario.email,
+            email: normalizarEmail(usuario.email || usuario.usuario),
             nome: usuario.nome,
             perfil: usuarioNormalizado.perfil,
             modulos: usuarioNormalizado.modulos,
+            podeEscrever: usuarioNormalizado.podeEscrever,
             iniciadoEm: new Date().toISOString()
         }));
     }
 
-    function encerrarSessao() {
+    async function encerrarSessao() {
         sessionStorage.removeItem(CHAVE_SESSAO);
+        try {
+            const { auth, firebaseAuth } = await obterFirebaseAuth();
+            await firebaseAuth.signOut(auth);
+        } catch (erro) {
+            console.warn("Nao foi possivel encerrar a sessao do Firebase Auth.", erro);
+        }
         location.href = caminhoLogin;
     }
 
     async function usuarioValido(usuario, senha) {
-        const usuarioNormalizado = String(usuario || "").trim().toLowerCase();
-        const usuarios = await listarUsuarios();
+        const identificador = String(usuario || "").trim();
+        const apelido = normalizarApelido(identificador);
+        const emailInicial = identificador.includes("@")
+            ? normalizarEmail(identificador)
+            : normalizarEmail(APELIDOS_LOGIN[apelido]);
+        let usuarios = [];
+        let email = emailInicial;
 
-        const encontrado = usuarios.find(item =>
-            item.usuario.toLowerCase() === usuarioNormalizado &&
-            item.senha === String(senha || "")
-        );
+        if (!email) {
+            usuarios = await listarUsuarios();
+            email = normalizarEmail(usuarios.find(item => item.apelido === apelido)?.email);
+        }
 
-        return encontrado ? normalizarUsuario(encontrado) : null;
+        if (!email) {
+            throw new Error("Apelido ou e-mail nao encontrado.");
+        }
+
+        const { auth, firebaseAuth } = await obterFirebaseAuth();
+        await firebaseAuth.signInWithEmailAndPassword(auth, email, String(senha || ""));
+        const usuariosAtualizados = await listarUsuarios();
+        const encontrado = usuariosAtualizados.find(item => idUsuarioPerfil(item) === email)
+            || usuarios.find(item => idUsuarioPerfil(item) === email);
+
+        return normalizarUsuario(encontrado || {
+            usuario: email,
+            email,
+            nome: email,
+            perfil: "visualizacao",
+            modulos: ["home"]
+        });
     }
 
     function protegerPagina() {
@@ -318,17 +436,17 @@
                 mensagem.textContent = "Validando acesso...";
             }
 
-            const encontrado = await usuarioValido(usuario, senha);
+            try {
+                const encontrado = await usuarioValido(usuario, senha);
 
-            if (!encontrado) {
+                salvarSessao(encontrado);
+                location.replace(caminhoInicialPermitido(encontrado));
+            } catch (erro) {
+                console.warn("Falha no login Firebase.", erro);
                 if (mensagem) {
-                    mensagem.textContent = "Usuario ou senha invalidos.";
+                    mensagem.textContent = "E-mail ou senha invalidos, ou acesso ainda nao cadastrado.";
                 }
-                return;
             }
-
-            salvarSessao(encontrado);
-            location.replace(caminhoInicialPermitido(encontrado));
         });
     }
 
@@ -391,7 +509,8 @@
         modulosDisponiveis: () => MODULOS_PORTAL.map(item => ({ ...item })),
         usuarioPodeAcessar,
         normalizarUsuario,
-        usuarioAdmin: () => obterSessao()?.perfil === "admin"
+        usuarioAdmin: () => obterSessao()?.perfil === "admin",
+        usuarioPodeEscrever: () => obterSessao()?.perfil === "admin" || obterSessao()?.podeEscrever === true
     };
 
     protegerPagina();
@@ -401,3 +520,4 @@
         inserirBotaoSair();
     });
 })();
+

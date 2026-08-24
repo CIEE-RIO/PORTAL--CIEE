@@ -20,7 +20,7 @@
                 <a href="../sazonalidade/index.html"><span class="nav-icon nav-icon-season" aria-hidden="true"></span>Sazonalidade</a>
                 <a href="../desligamentos/index.html"><span class="nav-icon nav-icon-exit" aria-hidden="true"></span>Desligamentos</a>
                 <a href="../producao/index.html"><span class="nav-icon nav-icon-production" aria-hidden="true"></span>Produção</a>
-                <a href="../colaboradores/index.html"><span class="nav-icon nav-icon-people" aria-hidden="true"></span>Colaboradores</a>
+                <a href="../colaboradores/index.html"><span class="nav-icon nav-icon-people" aria-hidden="true"></span>Mural de destaques</a>
                 <a class="active" href="./index.html"><span class="nav-icon nav-icon-import" aria-hidden="true"></span>Importar dados</a>
                 <a href="../memoria-calculo/index.html"><span class="nav-icon nav-icon-memory" aria-hidden="true"></span>Memória de cálculo</a>
                 <a id="linkUsuariosPortal" href="../usuarios/index.html"><span class="nav-icon nav-icon-users" aria-hidden="true"></span>Usuários</a>
@@ -36,6 +36,14 @@
                 </div>
             </header>
 
+            <div class="module-tabs" role="tablist" aria-label="Importar dados">
+                <button type="button" class="active" data-import-tab="producao" onclick="alternarAbaImportacao('producao')">Produção</button>
+                <button type="button" data-import-tab="preCadastro" onclick="alternarAbaImportacao('preCadastro')">Cadastro operacional</button>
+                <button type="button" data-import-tab="atualizacoes" onclick="alternarAbaImportacao('atualizacoes')">Outras atualizações</button>
+                <button type="button" data-import-tab="historico" onclick="alternarAbaImportacao('historico')">Histórico</button>
+            </div>
+
+            <div id="abaImportacaoProducao" class="module-tab-panel">
             <section class="dashboard production-workspace">
                 <div class="section-heading">
                     <div>
@@ -60,6 +68,130 @@
                 <div id="preValidacaoImportacao" class="import-validation" hidden></div>
             </section>
 
+            <section class="dashboard production-workspace">
+                <div class="section-heading">
+                    <div>
+                        <h2>Lançamento manual de produção</h2>
+                        <p>Use para correções pontuais ou inclusão de colaboradores sem substituir o fluxo principal por planilha.</p>
+                    </div>
+                </div>
+
+                <div class="manual-entry-grid">
+                    <label>
+                        <span>Competência</span>
+                        <input type="month" id="manualCompetencia">
+                    </label>
+                    <label>
+                        <span>Colaborador</span>
+                        <select id="manualNome">
+                            <option value="">Selecione o colaborador</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>E-mail</span>
+                        <input type="email" id="manualEmail" placeholder="email@cieerj.org.br">
+                    </label>
+                    <label>
+                        <span>Célula</span>
+                        <select id="manualCelula">
+                            <option value="">Selecione a célula</option>
+                        </select>
+                        <datalist id="manualCelulas"></datalist>
+                    </label>
+                    <label>
+                        <span>Contratos marcados</span>
+                        <input type="number" id="manualContratosMarcados" min="0" step="1" value="0">
+                    </label>
+                    <label>
+                        <span>Prorrogações</span>
+                        <input type="number" id="manualProrrogacoes" min="0" step="1" value="0">
+                    </label>
+                    <label>
+                        <span>Alterações</span>
+                        <input type="number" id="manualAlteracoes" min="0" step="1" value="0">
+                    </label>
+                    <label>
+                        <span>Contratos desligados</span>
+                        <input type="number" id="manualContratosDesligados" min="0" step="1" value="0">
+                    </label>
+                    <label>
+                        <span>Tickets resolvidos</span>
+                        <input type="number" id="manualTicketsResolvidos" min="0" step="1" value="0">
+                    </label>
+                    <label>
+                        <span>SLA médio em horas</span>
+                        <input type="number" id="manualSla" min="0" step="0.1" value="0">
+                    </label>
+                    <label class="manual-entry-wide">
+                        <span>Observação interna</span>
+                        <input type="text" id="manualObservacao" placeholder="Ex.: ajuste pontual, férias, lançamento complementar">
+                    </label>
+                </div>
+
+                <div id="manualColaboradoresCelula" class="manual-cell-people" hidden></div>
+
+                <div class="manual-entry-actions">
+                    <button type="button" onclick="salvarLancamentoManualProducao()">Salvar lançamento manual</button>
+                    <button type="button" class="secondary-button" onclick="limparLancamentoManualProducao()">Limpar campos</button>
+                </div>
+
+                <div id="resultadoLancamentoManual" class="status-message muted">
+                    Preencha os dados para adicionar ou atualizar um colaborador na competência.
+                </div>
+            </section>
+            </div>
+
+            <div id="abaImportacaoPreCadastro" class="module-tab-panel" hidden>
+            <section class="dashboard production-workspace">
+                <div class="section-heading">
+                    <div>
+                        <h2>Cadastro operacional</h2>
+                        <p>A lista parte das competências já importadas e pode ser ajustada manualmente para facilitar lançamentos futuros.</p>
+                    </div>
+                    <button type="button" class="secondary-button" onclick="carregarPreCadastroDasBasesImportadas()">Atualizar pelas bases importadas</button>
+                </div>
+
+                <div id="preCadastroColaboradores" class="pre-register-panel">
+                    <div class="manual-entry-grid">
+                        <label>
+                            <span>Nome do colaborador</span>
+                            <input type="text" id="preColaboradorNome" list="preCadastroColaboradoresLista" placeholder="Nome completo">
+                            <datalist id="preCadastroColaboradoresLista"></datalist>
+                        </label>
+                        <label>
+                            <span>E-mail</span>
+                            <input type="email" id="preColaboradorEmail" placeholder="email@cieerj.org.br">
+                        </label>
+                        <label>
+                            <span>Célula padrão</span>
+                            <input type="text" id="preColaboradorCelula" list="manualCelulas" placeholder="Selecione ou digite a célula">
+                        </label>
+                    </div>
+                    <div class="manual-entry-actions">
+                        <button type="button" onclick="salvarPreCadastroColaborador()">Salvar colaborador</button>
+                        <button type="button" class="secondary-button" onclick="limparPreCadastroColaborador()">Limpar</button>
+                    </div>
+                    <div id="preCadastroColaboradorStatus" class="status-message muted">Cadastre colaboradores para aparecerem na lista do lançamento manual.</div>
+                    <div class="table-wrap pre-register-table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Colaborador</th>
+                                    <th>E-mail</th>
+                                    <th>Célula padrão</th>
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="preCadastroColaboradoresTabela">
+                                <tr><td colspan="4">Nenhum colaborador pré-cadastrado.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            </div>
+
+            <div id="abaImportacaoAtualizacoes" class="module-tab-panel" hidden>
             <section class="dashboard parameters-workspace">
                 <div class="section-heading">
                     <div>
@@ -108,6 +240,7 @@
 
                     <article class="parameter-card">
                         <h3>Pesos do velocímetro</h3>
+                        <p class="parameter-help">Os pesos funcionam como uma prova de 10 pontos: contratos marcados têm maior peso, prorrogações e alterações ficam equilibradas, contratos desligados vêm abaixo e tickets resolvidos têm o menor peso.</p>
                         <div id="parametrosPesosVelocimetro" class="parameter-weight-list"></div>
                         <div class="parameter-actions">
                             <button type="button" onclick="salvarParametrosPesos()">Salvar pesos</button>
@@ -189,13 +322,70 @@
                         </div>
                         <div id="sazoLabelObsStatus" class="status-message muted">Selecione o ponto do rótulo para consultar ou salvar uma observação.</div>
                     </article>
+
+                    <article class="parameter-card parameter-card-wide">
+                        <h3>Observação em rótulo do desligamento</h3>
+                        <div class="parameter-form">
+                            <label>
+                                <span>Dashboard</span>
+                                <select id="desligLabelObsTipo">
+                                    <option value="estagio">Estágio</option>
+                                    <option value="aprendiz">Aprendiz</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>Gráfico</span>
+                                <select id="desligLabelObsChart">
+                                    <option value="graficoTotal">Percentual Total de Desligamento</option>
+                                    <option value="graficoAnt">Percentual de Desligamento Antecipado</option>
+                                    <option value="graficoTer">Percentual de Desligamento por Término</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>Ano</span>
+                                <input type="number" id="desligLabelObsAno" min="2020" max="2099" step="1">
+                            </label>
+                            <label>
+                                <span>Mês</span>
+                                <select id="desligLabelObsMes">
+                                    <option value="1">Jan</option>
+                                    <option value="2">Fev</option>
+                                    <option value="3">Mar</option>
+                                    <option value="4">Abr</option>
+                                    <option value="5">Mai</option>
+                                    <option value="6">Jun</option>
+                                    <option value="7">Jul</option>
+                                    <option value="8">Ago</option>
+                                    <option value="9">Set</option>
+                                    <option value="10">Out</option>
+                                    <option value="11">Nov</option>
+                                    <option value="12">Dez</option>
+                                </select>
+                            </label>
+                            <label class="parameter-form-wide">
+                                <span>Observação</span>
+                                <input type="text" id="desligLabelObsTexto" maxlength="42" placeholder="Ex.: campanha, feriado, ajuste de base...">
+                            </label>
+                        </div>
+                        <p class="parameter-help">Essa observação aparece no tooltip do ponto selecionado no dashboard de Desligamentos. A relação é feita por dashboard, gráfico, ano e mês.</p>
+                        <div class="parameter-actions">
+                            <button type="button" onclick="salvarObservacaoRotuloDesligamento()">Salvar observação</button>
+                            <button type="button" class="secondary-button" onclick="limparObservacaoRotuloDesligamento()">Limpar observação</button>
+                        </div>
+                        <div id="desligLabelObsStatus" class="status-message muted">Selecione o ponto do rótulo para consultar ou salvar uma observação.</div>
+                    </article>
                 </div>
 
+            </section>
+            </div>
+
+            <div id="abaImportacaoHistorico" class="module-tab-panel" hidden>
+            <section class="dashboard parameters-workspace">
                 <div class="parameter-history">
                     <div class="section-heading">
                         <div>
                             <h3>Histórico de alterações</h3>
-                            <p>Últimos ajustes registrados nos parâmetros.</p>
+                            <p>Últimos ajustes registrados nas atualizações do módulo.</p>
                         </div>
                     </div>
                     <div class="table-wrap">
@@ -216,6 +406,7 @@
                     </div>
                 </div>
             </section>
+            </div>
 
             <section class="dashboard">
                 <div class="section-heading">
@@ -242,8 +433,20 @@
     <script src="../../js/dashboard.js?v=20260731-2"></script>
     <script src="../../js/importador.js"></script>
     <script src="../../js/firebase-producao.js?v=20260731-2"></script>
-    <script>
+    <script type="module">
+        import { getApp, getApps, initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { deleteDoc, doc, getDoc, getFirestore, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
         (function configurarObservacaoRotuloSazonalidade() {
+            const firebaseConfigSazonalidade = {
+                apiKey: "AIzaSyCcQRcGU4JVMSfumkwxBTMsLs3RMXglcao",
+                authDomain: "dashboard-sazo.firebaseapp.com",
+                projectId: "dashboard-sazo",
+                storageBucket: "dashboard-sazo.firebasestorage.app",
+                messagingSenderId: "1020714176776",
+                appId: "1:1020714176776:web:24b5420dacc3960da21cbd",
+                measurementId: "G-G3DKMC9J9G"
+            };
             const ids = {
                 tipo: "sazoLabelObsTipo",
                 chart: "sazoLabelObsChart",
@@ -254,7 +457,16 @@
             };
 
             const campo = id => document.getElementById(id);
-            const chaveStorage = tipo => `portal-sazonalidade-observacoes-rotulo-${tipo || "estagio"}`;
+            const appSazonalidade = getApps().some(app => app.name === "sazonalidade-observacoes")
+                ? getApp("sazonalidade-observacoes")
+                : initializeApp(firebaseConfigSazonalidade, "sazonalidade-observacoes");
+            const dbSazonalidade = getFirestore(appSazonalidade);
+            const limparId = valor => String(valor || "")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/(^-|-$)/g, "");
             const chaveRotulo = () => {
                 const chart = campo(ids.chart)?.value;
                 const ano = campo(ids.ano)?.value;
@@ -262,43 +474,73 @@
 
                 return chart && ano && mes ? `${chart}|${ano}|${mes}` : "";
             };
-            const lerMapa = () => {
-                try {
-                    return JSON.parse(localStorage.getItem(chaveStorage(campo(ids.tipo)?.value)) || "{}") || {};
-                } catch {
-                    return {};
-                }
+            const idDocumento = () => {
+                const tipo = campo(ids.tipo)?.value || "estagio";
+                const [chart, ano, mes] = chaveRotulo().split("|");
+
+                return chart && ano && mes ? `${limparId(tipo)}_${limparId(chart)}_${limparId(ano)}_${limparId(mes)}` : "";
             };
-            const gravarMapa = mapa => localStorage.setItem(chaveStorage(campo(ids.tipo)?.value), JSON.stringify(mapa));
+            const docObservacao = () => {
+                const id = idDocumento();
+                return id ? doc(dbSazonalidade, "observacoes_rotulos", id) : null;
+            };
             const setStatus = texto => {
                 const status = campo(ids.status);
                 if (status) status.textContent = texto;
             };
 
-            window.atualizarCampoObservacaoRotuloSazonalidade = function atualizarCampoObservacaoRotuloSazonalidade() {
-                const chave = chaveRotulo();
+            window.atualizarCampoObservacaoRotuloSazonalidade = async function atualizarCampoObservacaoRotuloSazonalidade() {
+                const referencia = docObservacao();
                 const texto = campo(ids.texto);
 
-                if (!chave || !texto) return;
+                if (!referencia || !texto) return;
 
-                texto.value = lerMapa()[chave] || "";
+                try {
+                    const snap = await getDoc(referencia);
+                    texto.value = snap.exists() ? String(snap.data()?.texto || "") : "";
+                } catch (erro) {
+                    console.warn("Nao foi possivel carregar a observacao do rotulo.", erro);
+                    texto.value = "";
+                    setStatus("Não foi possível consultar o Firebase. Confira as regras da Sazonalidade.");
+                    return;
+                }
+
                 setStatus(texto.value ? "Observação carregada para este rótulo." : "Sem observação salva para este rótulo.");
             };
 
-            window.salvarObservacaoRotuloSazonalidade = function salvarObservacaoRotuloSazonalidade() {
+            window.salvarObservacaoRotuloSazonalidade = async function salvarObservacaoRotuloSazonalidade() {
                 const chave = chaveRotulo();
+                const referencia = docObservacao();
                 const texto = campo(ids.texto)?.value.trim() || "";
 
-                if (!chave) {
+                if (!chave || !referencia) {
                     setStatus("Informe gráfico, ano e mês antes de salvar.");
                     return;
                 }
 
-                const mapa = lerMapa();
-                if (texto) mapa[chave] = texto;
-                else delete mapa[chave];
-                gravarMapa(mapa);
-                setStatus(texto ? "Observação salva. Abra a Sazonalidade para ver no rótulo." : "Observação removida.");
+                const [chart, ano, mes] = chave.split("|");
+                const tipo = campo(ids.tipo)?.value || "estagio";
+
+                try {
+                    if (texto) {
+                        await setDoc(referencia, {
+                            tipo,
+                            chart,
+                            ano,
+                            mes: Number(mes),
+                            chave,
+                            texto,
+                            atualizadoEm: serverTimestamp()
+                        }, { merge: true });
+                    } else {
+                        await deleteDoc(referencia);
+                    }
+
+                    setStatus(texto ? "Observação salva para todos os logins." : "Observação removida para todos os logins.");
+                } catch (erro) {
+                    console.error(erro);
+                    setStatus("Erro ao salvar no Firebase. Confira as regras da Sazonalidade.");
+                }
             };
 
             window.limparObservacaoRotuloSazonalidade = function limparObservacaoRotuloSazonalidade() {
@@ -315,7 +557,130 @@
                 window.atualizarCampoObservacaoRotuloSazonalidade();
             });
         })();
+
+        (function configurarObservacaoRotuloDesligamento() {
+            const firebaseConfigDesligamento = {
+                apiKey: "AIzaSyAyv5DOuqbtehhRS31PcNrXO6FzJ230mpg",
+                authDomain: "dash-desligamento.firebaseapp.com",
+                projectId: "dash-desligamento",
+                storageBucket: "dash-desligamento.firebasestorage.app",
+                messagingSenderId: "228868222017",
+                appId: "1:228868222017:web:24388638215f34690faac0",
+                measurementId: "G-CM52929TBL"
+            };
+            const ids = {
+                tipo: "desligLabelObsTipo",
+                chart: "desligLabelObsChart",
+                ano: "desligLabelObsAno",
+                mes: "desligLabelObsMes",
+                texto: "desligLabelObsTexto",
+                status: "desligLabelObsStatus"
+            };
+
+            const campo = id => document.getElementById(id);
+            const appDesligamento = getApps().some(app => app.name === "desligamento-observacoes")
+                ? getApp("desligamento-observacoes")
+                : initializeApp(firebaseConfigDesligamento, "desligamento-observacoes");
+            const dbDesligamento = getFirestore(appDesligamento);
+            const limparId = valor => String(valor || "")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/(^-|-$)/g, "");
+            const chaveRotulo = () => {
+                const chart = campo(ids.chart)?.value;
+                const ano = campo(ids.ano)?.value;
+                const mes = campo(ids.mes)?.value;
+
+                return chart && ano && mes ? `${chart}|${ano}|${mes}` : "";
+            };
+            const idDocumento = () => {
+                const tipo = campo(ids.tipo)?.value || "estagio";
+                const [chart, ano, mes] = chaveRotulo().split("|");
+
+                return chart && ano && mes ? `${limparId(tipo)}_${limparId(chart)}_${limparId(ano)}_${limparId(mes)}` : "";
+            };
+            const docObservacao = () => {
+                const id = idDocumento();
+                return id ? doc(dbDesligamento, "observacoes_rotulos", id) : null;
+            };
+            const setStatus = texto => {
+                const status = campo(ids.status);
+                if (status) status.textContent = texto;
+            };
+
+            window.atualizarCampoObservacaoRotuloDesligamento = async function atualizarCampoObservacaoRotuloDesligamento() {
+                const referencia = docObservacao();
+                const texto = campo(ids.texto);
+
+                if (!referencia || !texto) return;
+
+                try {
+                    const snap = await getDoc(referencia);
+                    texto.value = snap.exists() ? String(snap.data()?.texto || "") : "";
+                } catch (erro) {
+                    console.warn("Nao foi possivel carregar a observacao do rotulo de desligamento.", erro);
+                    texto.value = "";
+                    setStatus("Não foi possível consultar o Firebase. Confira as regras do Desligamento.");
+                    return;
+                }
+
+                setStatus(texto.value ? "Observação carregada para este rótulo." : "Sem observação salva para este rótulo.");
+            };
+
+            window.salvarObservacaoRotuloDesligamento = async function salvarObservacaoRotuloDesligamento() {
+                const chave = chaveRotulo();
+                const referencia = docObservacao();
+                const texto = campo(ids.texto)?.value.trim() || "";
+
+                if (!chave || !referencia) {
+                    setStatus("Informe gráfico, ano e mês antes de salvar.");
+                    return;
+                }
+
+                const [chart, ano, mes] = chave.split("|");
+                const tipo = campo(ids.tipo)?.value || "estagio";
+
+                try {
+                    if (texto) {
+                        await setDoc(referencia, {
+                            tipo,
+                            programa: tipo,
+                            chart,
+                            ano,
+                            mes: Number(mes),
+                            chave,
+                            texto,
+                            atualizadoEm: serverTimestamp()
+                        }, { merge: true });
+                    } else {
+                        await deleteDoc(referencia);
+                    }
+
+                    setStatus(texto ? "Observação de desligamento salva para todos os logins." : "Observação de desligamento removida para todos os logins.");
+                } catch (erro) {
+                    console.error(erro);
+                    setStatus("Erro ao salvar no Firebase. Confira as regras do Desligamento.");
+                }
+            };
+
+            window.limparObservacaoRotuloDesligamento = function limparObservacaoRotuloDesligamento() {
+                const texto = campo(ids.texto);
+                if (texto) texto.value = "";
+                window.salvarObservacaoRotuloDesligamento();
+            };
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const hoje = new Date();
+                if (campo(ids.ano) && !campo(ids.ano).value) campo(ids.ano).value = String(hoje.getFullYear());
+                if (campo(ids.mes) && !campo(ids.mes).value) campo(ids.mes).value = String(hoje.getMonth() + 1);
+                [ids.tipo, ids.chart, ids.ano, ids.mes].forEach(id => campo(id)?.addEventListener("change", window.atualizarCampoObservacaoRotuloDesligamento));
+                window.atualizarCampoObservacaoRotuloDesligamento();
+            });
+        })();
     </script>
     <script src="../../js/auth.js"></script>
 </body>
 </html>
+

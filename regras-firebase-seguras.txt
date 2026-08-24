@@ -10,10 +10,6 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/usuarios_login/$(request.auth.token.email));
     }
 
-    function usuarioAtivo() {
-      return autenticado();
-    }
-
     function admin() {
       return autenticado()
         && exists(/databases/$(database)/documents/usuarios_login/$(request.auth.token.email))
@@ -28,12 +24,12 @@ service cloud.firestore {
     }
 
     match /usuarios_login/{document=**} {
-      allow read: if usuarioAtivo();
+      allow read: if autenticado();
       allow write: if admin();
     }
 
     match /{document=**} {
-      allow read: if usuarioAtivo();
+      allow read: if autenticado();
       allow write: if podeEscrever();
     }
   }
