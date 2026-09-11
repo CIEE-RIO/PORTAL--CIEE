@@ -387,21 +387,13 @@ function valorCsv(valor) {
     return `"${texto}"`;
 }
 
-function exportarPasta() {
-    const colaborador = colaboradorSelecionado();
+function compararDataAvaliacao(a, b) {
+    const dataA = String(a?.dataAvaliacao || "");
+    const dataB = String(b?.dataAvaliacao || "");
+    return dataA.localeCompare(dataB) || String(a?.colaboradorNome || "").localeCompare(String(b?.colaboradorNome || ""), "pt-BR");
+}
 
-    if (!colaborador) {
-        status("error", "Selecione uma pasta antes de exportar.");
-        return;
-    }
-
-    const lista = feedbacksDoColaborador(colaborador.id);
-
-    if (!lista.length) {
-        status("error", "Esta pasta ainda não tem registros para exportar.");
-        return;
-    }
-
+function baixarRegistros(nomeArquivo, lista) {
     const colunas = [
         "Colaborador",
         "E-mail",
@@ -438,12 +430,40 @@ function exportarPasta() {
     const link = document.createElement("a");
 
     link.href = url;
-    link.download = `wfm-${slug(colaborador.nome)}.csv`;
+    link.download = nomeArquivo;
     document.body.appendChild(link);
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
+}
+
+function exportarPasta() {
+    const colaborador = colaboradorSelecionado();
+
+    if (!colaborador) {
+        status("error", "Selecione uma pasta antes de exportar.");
+        return;
+    }
+
+    const lista = feedbacksDoColaborador(colaborador.id);
+
+    if (!lista.length) {
+        status("error", "Esta pasta ainda não tem registros para exportar.");
+        return;
+    }
+
+    baixarRegistros(`wfm-${slug(colaborador.nome)}.csv`, [...lista].sort(compararDataAvaliacao));
     status("success", "Planilha da pasta WFM exportada.");
+}
+
+function exportarGeral() {
+    if (!feedbacks.length) {
+        status("error", "Ainda não há registros WFM para exportar.");
+        return;
+    }
+
+    baixarRegistros("wfm-geral-por-data-avaliacao.csv", [...feedbacks].sort(compararDataAvaliacao));
+    status("success", "Planilha geral WFM exportada por data de avaliação.");
 }
 
 async function salvarFeedback(event) {
@@ -568,6 +588,7 @@ async function inicializar() {
     $("wfmForm")?.addEventListener("submit", salvarFeedback);
     $("wfmLimpar")?.addEventListener("click", () => limparFormulario(true));
     $("wfmExportar")?.addEventListener("click", exportarPasta);
+    $("wfmExportarGeral")?.addEventListener("click", exportarGeral);
     $("wfmColaborador")?.addEventListener("change", event => selecionarColaborador(event.target.value));
     $("wfmAtualizarBase")?.addEventListener("click", () => carregarColaboradores().catch(erro => status("error", `Erro ao atualizar base: ${erro.message}`)));
     $("wfmBuscaColaborador")?.addEventListener("input", renderizarPastas);
