@@ -477,9 +477,15 @@ async function salvarFeedback(event) {
     const colaborador = colaboradorSelecionado();
     const feedback = String($("wfmFeedback")?.value || "").trim();
     const dataAvaliacao = $("wfmData")?.value;
+    const marcadores = marcadoresSelecionados();
 
-    if (!colaborador || !dataAvaliacao || !feedback) {
-        status("error", "Informe colaborador, data e feedback antes de salvar.");
+    if (!colaborador || !dataAvaliacao) {
+        status("error", "Informe colaborador e data antes de salvar.");
+        return;
+    }
+
+    if (!feedback && !marcadores.length) {
+        status("error", "Informe ao menos um marcador de avaliação ou escreva um feedback.");
         return;
     }
 
@@ -493,7 +499,7 @@ async function salvarFeedback(event) {
         dataAvaliacao,
         canal: $("wfmCanal")?.value || "Ticket",
         nota: notaSelecionada(),
-        marcadores: marcadoresSelecionados(),
+        marcadores,
         feedback,
         pontosPositivos: String($("wfmPontosPositivos")?.value || "").trim(),
         pontosMelhoria: String($("wfmPontosMelhoria")?.value || "").trim(),
