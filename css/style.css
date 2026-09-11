@@ -53,6 +53,119 @@ input {
     transition: transform .28s ease, opacity .2s ease;
 }
 
+/* WFM final overrides: keep the module stable against generic form/button rules. */
+.wfm-page .wfm-form {
+    display: grid;
+    gap: 16px;
+}
+
+.wfm-page .wfm-form .import-field textarea,
+.wfm-page .wfm-form .import-field input,
+.wfm-page .wfm-form .import-field select,
+.wfm-page .wfm-folder-panel .import-field input {
+    width: 100%;
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--texto);
+    padding: 12px;
+    font: inherit;
+}
+
+.wfm-page .wfm-form .import-field textarea {
+    min-height: 92px;
+}
+
+.wfm-page .wfm-rating-field,
+.wfm-page .wfm-tags-field {
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+    padding: 14px;
+    margin: 0;
+    min-inline-size: 0;
+}
+
+.wfm-page .wfm-rating-field legend,
+.wfm-page .wfm-tags-field legend {
+    padding: 0 6px;
+    color: var(--texto-suave);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.wfm-page .wfm-rating-options,
+.wfm-page .wfm-tag-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.wfm-page .wfm-rating-options label,
+.wfm-page .wfm-tag-options label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+    padding: 8px 10px;
+    background: #fff;
+    color: var(--texto);
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1.2;
+}
+
+.wfm-page .wfm-rating-options label:has(input:checked),
+.wfm-page .wfm-tag-options label:has(input:checked) {
+    border-color: var(--azul);
+    background: #eef6ff;
+    color: var(--azul);
+}
+
+.wfm-page .wfm-rating-options input,
+.wfm-page .wfm-tag-options input {
+    width: auto;
+    accent-color: var(--azul);
+}
+
+.wfm-page .wfm-rating-options span {
+    color: #f5a400;
+    letter-spacing: 1px;
+}
+
+.wfm-page .wfm-folder-item {
+    width: 100%;
+    display: grid;
+    gap: 4px;
+    text-align: left;
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--texto);
+    padding: 12px;
+    cursor: pointer;
+    box-shadow: none;
+}
+
+.wfm-page .wfm-folder-item:hover,
+.wfm-page .wfm-folder-item.active {
+    border-color: var(--azul);
+    background: #f8fbff;
+    color: var(--texto);
+    box-shadow: 0 8px 18px rgba(0, 65, 125, .12);
+}
+
+.wfm-page .wfm-folder-item strong {
+    color: var(--azul);
+}
+
+.wfm-page .wfm-folder-item span,
+.wfm-page .wfm-folder-item small {
+    color: var(--texto-suave);
+    font-size: 12px;
+}
+
 .layout {
     transition: grid-template-columns .28s ease;
 }
@@ -4141,4 +4254,117 @@ tbody tr:last-child td {
         margin-top: 0;
         top: 0;
     }
+}
+
+/* WFM cascade fix: must stay after generic button and form rules. */
+.wfm-page .wfm-form {
+    display: grid;
+    gap: 16px;
+}
+
+.wfm-page .wfm-form .import-field textarea,
+.wfm-page .wfm-form .import-field input,
+.wfm-page .wfm-form .import-field select,
+.wfm-page .wfm-folder-panel .import-field input {
+    width: 100%;
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--texto);
+    padding: 12px;
+    font: inherit;
+}
+
+.wfm-page .wfm-form .import-field textarea {
+    min-height: 92px;
+}
+
+.wfm-page .wfm-rating-field,
+.wfm-page .wfm-tags-field {
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+    padding: 14px;
+    margin: 0;
+    min-inline-size: 0;
+}
+
+.wfm-page .wfm-rating-field legend,
+.wfm-page .wfm-tags-field legend {
+    padding: 0 6px;
+    color: var(--texto-suave);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.wfm-page .wfm-rating-options,
+.wfm-page .wfm-tag-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.wfm-page .wfm-rating-options label,
+.wfm-page .wfm-tag-options label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+    padding: 8px 10px;
+    background: #fff;
+    color: var(--texto);
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1.2;
+}
+
+.wfm-page .wfm-rating-options label:has(input:checked),
+.wfm-page .wfm-tag-options label:has(input:checked) {
+    border-color: var(--azul);
+    background: #eef6ff;
+    color: var(--azul);
+}
+
+.wfm-page .wfm-rating-options input,
+.wfm-page .wfm-tag-options input {
+    width: auto;
+    accent-color: var(--azul);
+}
+
+.wfm-page .wfm-rating-options span {
+    color: #f5a400;
+    letter-spacing: 1px;
+}
+
+.wfm-page .wfm-folder-item {
+    width: 100%;
+    display: grid;
+    gap: 4px;
+    text-align: left;
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--texto);
+    padding: 12px;
+    cursor: pointer;
+    box-shadow: none;
+}
+
+.wfm-page .wfm-folder-item:hover,
+.wfm-page .wfm-folder-item.active {
+    border-color: var(--azul);
+    background: #f8fbff;
+    color: var(--texto);
+    box-shadow: 0 8px 18px rgba(0, 65, 125, .12);
+}
+
+.wfm-page .wfm-folder-item strong {
+    color: var(--azul);
+}
+
+.wfm-page .wfm-folder-item span,
+.wfm-page .wfm-folder-item small {
+    color: var(--texto-suave);
+    font-size: 12px;
 }
