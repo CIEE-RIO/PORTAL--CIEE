@@ -4,6 +4,7 @@
         { id: "sazonalidade", nome: "Sazonalidade", caminho: "modulos/sazonalidade/index.html" },
         { id: "desligamentos", nome: "Desligamentos", caminho: "modulos/desligamentos/index.html" },
         { id: "producao", nome: "Produção", caminho: "modulos/producao/index.html" },
+        { id: "wfm", nome: "Avaliação WFM", caminho: "modulos/wfm/index.html" },
         { id: "colaboradores", nome: "Mural de destaques", caminho: "modulos/colaboradores/index.html" },
         { id: "importar-producao", nome: "Importar dados", caminho: "modulos/importar-producao/index.html" },
         { id: "memoria-calculo", nome: "Memória de cálculo", caminho: "modulos/memoria-calculo/index.html" },
@@ -102,6 +103,7 @@
         if (path.includes("/modulos/sazonalidade/")) return "sazonalidade";
         if (path.includes("/modulos/desligamentos/")) return "desligamentos";
         if (path.includes("/modulos/producao/")) return "producao";
+        if (path.includes("/modulos/wfm/")) return "wfm";
         if (path.includes("/modulos/colaboradores/")) return "colaboradores";
         if (path.includes("/modulos/importar-producao/")) return "importar-producao";
         if (path.includes("/modulos/memoria-calculo/")) return "memoria-calculo";

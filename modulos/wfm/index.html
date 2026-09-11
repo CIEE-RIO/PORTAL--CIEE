@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avaliação WFM | Portal Operacional</title>
+    <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="../../assets/logo-oficial-2024.png" alt="Logo CIEE Rio">
+                <h2>Portal Operacional</h2>
+                <span>Gestão Corporativa</span>
+            </div>
+
+            <nav>
+                <a href="../../index.html"><span class="nav-icon nav-icon-dashboard" aria-hidden="true"></span>Menu</a>
+                <a href="../sazonalidade/index.html"><span class="nav-icon nav-icon-season" aria-hidden="true"></span>Sazonalidade</a>
+                <a href="../desligamentos/index.html"><span class="nav-icon nav-icon-exit" aria-hidden="true"></span>Desligamentos</a>
+                <a href="../producao/index.html"><span class="nav-icon nav-icon-production" aria-hidden="true"></span>Produção</a>
+                <a class="active" href="./index.html"><span class="nav-icon nav-icon-wfm" aria-hidden="true"></span>Avaliação WFM</a>
+                <a href="../colaboradores/index.html"><span class="nav-icon nav-icon-people" aria-hidden="true"></span>Mural de destaques</a>
+                <a href="../importar-producao/index.html"><span class="nav-icon nav-icon-import" aria-hidden="true"></span>Importar dados</a>
+                <a href="../memoria-calculo/index.html"><span class="nav-icon nav-icon-memory" aria-hidden="true"></span>Memória de cálculo</a>
+                <a id="linkUsuariosPortal" href="../usuarios/index.html"><span class="nav-icon nav-icon-users" aria-hidden="true"></span>Usuários</a>
+            </nav>
+        </aside>
+
+        <main class="content wfm-page">
+            <header class="topbar">
+                <div>
+                    <span class="eyebrow">Qualidade e feedback</span>
+                    <h1>Avaliação WFM</h1>
+                    <p>Registre feedbacks de qualidade vinculados aos colaboradores da base de Produção.</p>
+                </div>
+            </header>
+
+            <section class="dashboard wfm-summary">
+                <div class="section-heading">
+                    <div>
+                        <h2>Base de colaboradores</h2>
+                        <p id="wfmBaseInfo">Carregando última competência de Produção...</p>
+                    </div>
+                    <button type="button" class="secondary-button" id="wfmAtualizarBase">Atualizar base</button>
+                </div>
+                <div class="kpi-grid">
+                    <article class="kpi-card">
+                        <span>Colaboradores carregados</span>
+                        <strong id="wfmTotalColaboradores">0</strong>
+                    </article>
+                    <article class="kpi-card">
+                        <span>Feedbacks registrados</span>
+                        <strong id="wfmTotalFeedbacks">0</strong>
+                    </article>
+                </div>
+                <div id="wfmStatus" class="status-message muted">Conectando ao Firebase...</div>
+            </section>
+
+            <section class="dashboard wfm-entry-panel">
+                <form id="wfmForm" class="wfm-form">
+                    <div class="section-heading">
+                        <div>
+                            <h2>Nova análise WFM</h2>
+                            <p>Selecione uma pasta de colaborador abaixo e registre a avaliação nesse prontuário.</p>
+                        </div>
+                    </div>
+
+                    <label class="import-field">
+                        <span>Colaborador avaliado</span>
+                        <select id="wfmColaborador" required>
+                            <option value="">Selecione o colaborador</option>
+                        </select>
+                    </label>
+
+                    <div class="wfm-selected-banner" id="wfmSelecionadoResumo">Selecione o colaborador avaliado para vincular o registro à pasta WFM.</div>
+
+                    <div class="wfm-fields">
+                        <label class="import-field">
+                            <span>Data da avaliação</span>
+                            <input id="wfmData" type="date" required>
+                        </label>
+                        <label class="import-field">
+                            <span>Canal</span>
+                            <select id="wfmCanal">
+                                <option value="Ticket">Ticket</option>
+                                <option value="E-mail">E-mail</option>
+                                <option value="Zendesk WFM">Zendesk WFM</option>
+                                <option value="Atendimento geral">Atendimento geral</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <fieldset class="wfm-rating-field">
+                        <legend>Avaliação geral</legend>
+                        <div class="wfm-rating-options" id="wfmNota">
+                            <label><input type="radio" name="wfmNota" value="1"><span>★</span><small>1</small></label>
+                            <label><input type="radio" name="wfmNota" value="2"><span>★★</span><small>2</small></label>
+                            <label><input type="radio" name="wfmNota" value="3"><span>★★★</span><small>3</small></label>
+                            <label><input type="radio" name="wfmNota" value="4"><span>★★★★</span><small>4</small></label>
+                            <label><input type="radio" name="wfmNota" value="5" checked><span>★★★★★</span><small>5</small></label>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="wfm-tags-field">
+                        <legend>Marcadores da avaliação</legend>
+                        <div class="wfm-tag-options">
+                            <label><input type="checkbox" name="wfmMarcadores" value="Boa comunicação com o cliente">Boa comunicação</label>
+                            <label><input type="checkbox" name="wfmMarcadores" value="Comunicação a melhorar">Comunicação a melhorar</label>
+                            <label><input type="checkbox" name="wfmMarcadores" value="Análise bem fundamentada">Análise bem fundamentada</label>
+                            <label><input type="checkbox" name="wfmMarcadores" value="Análise incompleta">Análise incompleta</label>
+                            <label><input type="checkbox" name="wfmMarcadores" value="Prazo adequado">Prazo adequado</label>
+                            <label><input type="checkbox" name="wfmMarcadores" value="Atraso na tratativa">Atraso na tratativa</label>
+                            <label><input type="checkbox" name="wfmMarcadores" value="Procedimento seguido">Procedimento seguido</label>
+                            <label><input type="checkbox" name="wfmMarcadores" value="Procedimento divergente">Procedimento divergente</label>
+                        </div>
+                    </fieldset>
+
+                    <label class="import-field">
+                        <span>Feedback</span>
+                        <textarea id="wfmFeedback" rows="5" placeholder="Descreva o feedback da avaliação." required></textarea>
+                    </label>
+
+                    <div class="wfm-fields">
+                        <label class="import-field">
+                            <span>Pontos positivos</span>
+                            <textarea id="wfmPontosPositivos" rows="3" placeholder="Registre boas práticas observadas."></textarea>
+                        </label>
+                        <label class="import-field">
+                            <span>Pontos de melhoria</span>
+                            <textarea id="wfmPontosMelhoria" rows="3" placeholder="Registre oportunidades de melhoria."></textarea>
+                        </label>
+                    </div>
+
+                    <label class="import-field">
+                        <span>Próxima ação</span>
+                        <input id="wfmProximaAcao" type="text" placeholder="Ex.: acompanhar próximo atendimento, reforçar procedimento...">
+                    </label>
+
+                    <div class="wfm-actions">
+                        <button type="submit" class="primary-button" id="wfmSalvar">Salvar na pasta</button>
+                        <button type="button" class="secondary-button" id="wfmLimpar">Limpar</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="wfm-grid">
+                <section class="dashboard wfm-folder-panel">
+                    <div class="section-heading">
+                        <div>
+                            <h2>Pastas dos colaboradores</h2>
+                            <p>Escolha uma pessoa para abrir o perfil WFM e consultar o histórico reservado.</p>
+                        </div>
+                    </div>
+                    <label class="import-field">
+                        <span>Buscar colaborador</span>
+                        <input id="wfmBuscaColaborador" type="search" placeholder="Digite nome, e-mail ou célula">
+                    </label>
+                    <div id="wfmPastas" class="wfm-folder-list">
+                        <div class="empty-state">Carregando pastas...</div>
+                    </div>
+                </section>
+
+                <section class="dashboard wfm-record-panel">
+                    <div class="section-heading">
+                        <div>
+                            <h2>Pasta WFM</h2>
+                            <p id="wfmPerfilResumo">Selecione um colaborador para abrir a pasta de atendimento.</p>
+                        </div>
+                        <button type="button" class="secondary-button" id="wfmExportar">Exportar planilha</button>
+                    </div>
+
+                    <div id="wfmPerfil" class="wfm-profile-card">
+                        <div class="empty-state">Nenhuma pasta selecionada.</div>
+                    </div>
+
+                    <div id="wfmHistorico" class="wfm-history-list">
+                        <div class="empty-state">Selecione um colaborador para visualizar o histórico.</div>
+                    </div>
+                </section>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../js/auth.js"></script>
+    <script type="module" src="../../js/wfm.js"></script>
+</body>
+</html>
