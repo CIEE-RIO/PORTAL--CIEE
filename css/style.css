@@ -4495,3 +4495,43 @@ tbody tr:last-child td {
     color: #fff !important;
     box-shadow: 0 14px 24px rgba(0, 59, 113, .18) !important;
 }
+
+.layout .action-tabs {
+    display: flex;
+    align-items: flex-end;
+    gap: 0 !important;
+    border-bottom: 1px solid rgba(0, 59, 113, .12);
+    padding-left: 0;
+}
+
+.layout .action-tabs .btn {
+    min-height: 44px;
+    border: 0 !important;
+    border-radius: 10px 10px 0 0 !important;
+    background: transparent !important;
+    color: var(--azul-2) !important;
+    box-shadow: none !important;
+    padding: 12px 18px !important;
+    font-weight: 850 !important;
+    transform: none !important;
+    width: auto !important;
+}
+
+.layout .action-tabs .btn:hover,
+.layout .action-tabs .btn:focus {
+    background: rgba(0, 94, 168, .08) !important;
+    color: var(--azul) !important;
+}
+
+.layout .action-tabs .btn-primary,
+.layout .action-tabs .btn-outline-primary,
+.layout .action-tabs .btn-outline-secondary {
+    background: transparent !important;
+    color: var(--azul-2) !important;
+}
+
+.layout .action-tabs .btn:first-child {
+    background: var(--azul) !important;
+    color: #fff !important;
+    box-shadow: 0 14px 24px rgba(0, 59, 113, .18) !important;
+}
