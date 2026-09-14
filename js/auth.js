@@ -20,6 +20,7 @@
     };
     const CHAVE_SESSAO = "portal_ciee_sessao";
     const COLECAO_USUARIOS = "usuarios_login";
+    const COLECAO_ACESSOS = "acessos_portal";
     const paginaLogin = location.pathname.toLowerCase().endsWith("/login.html");
     const paginaUsuarios = location.pathname.toLowerCase().includes("/modulos/usuarios/");
     const caminhoLogin = `${caminhoBase()}login.html`;
@@ -337,6 +338,57 @@
         await firestore.deleteDoc(firestore.doc(db, COLECAO_USUARIOS, String(usuario || "")));
     }
 
+    async function registrarAcesso(tipo, moduloId) {
+        try {
+            const sessao = obterSessao();
+
+            if (!sessao?.email) {
+                return;
+            }
+
+            await obterUsuarioAuthAtual();
+            const { db, firestore } = await obterFirebase();
+
+            await firestore.addDoc(firestore.collection(db, COLECAO_ACESSOS), {
+                email: sessao.email,
+                nome: sessao.nome || sessao.email,
+                perfil: sessao.perfil || "",
+                modulos: Array.isArray(sessao.modulos) ? sessao.modulos : [],
+                tipo,
+                modulo: moduloId || moduloAtual(),
+                pagina: location.pathname,
+                userAgent: navigator.userAgent,
+                criadoEm: firestore.serverTimestamp(),
+                criadoEmCliente: new Date().toISOString()
+            });
+        } catch (erro) {
+            console.warn("Nao foi possivel registrar acesso.", erro);
+        }
+    }
+
+    async function listarAcessosRecentes(limite = 80) {
+        await exigirUsuarioAuthAtivo();
+
+        const sessao = obterSessao();
+
+        if (normalizarEmail(sessao?.email) !== "rodrigob@cieerj.org.br" && sessao?.perfil !== "admin") {
+            return [];
+        }
+
+        const { db, firestore } = await obterFirebase();
+        const consulta = firestore.query(
+            firestore.collection(db, COLECAO_ACESSOS),
+            firestore.orderBy("criadoEm", "desc"),
+            firestore.limit(limite)
+        );
+        const snap = await firestore.getDocs(consulta);
+        const acessos = [];
+
+        snap.forEach(item => acessos.push({ id: item.id, ...item.data() }));
+
+        return acessos;
+    }
+
     function salvarSessao(usuario) {
         const usuarioNormalizado = normalizarUsuario(usuario);
 
@@ -411,7 +463,10 @@
 
         if (!usuarioPodeAcessar(sessao, modulo)) {
             prepararAcessoNegado(modulo, sessao);
+            return;
         }
+
+        registrarAcesso("modulo", modulo);
     }
 
     function configurarLogin() {
@@ -442,6 +497,7 @@
                 const encontrado = await usuarioValido(usuario, senha);
 
                 salvarSessao(encontrado);
+                await registrarAcesso("login", "login");
                 location.replace(caminhoInicialPermitido(encontrado));
             } catch (erro) {
                 console.warn("Falha no login Firebase.", erro);
@@ -508,6 +564,7 @@
         listarUsuarios,
         salvarUsuario,
         removerUsuario,
+        listarAcessosRecentes,
         modulosDisponiveis: () => MODULOS_PORTAL.map(item => ({ ...item })),
         usuarioPodeAcessar,
         normalizarUsuario,

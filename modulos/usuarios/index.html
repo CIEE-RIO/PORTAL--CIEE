@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Usuários | Portal Operacional</title>
-    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="../../css/style.css?v=layout-6">
 </head>
 <body>
     <div class="layout">
@@ -105,6 +105,34 @@
                         </table>
                     </div>
                 </article>
+            </section>
+
+            <section class="dashboard user-access-log" id="painelAcessosPortal" hidden>
+                <div class="section-heading">
+                    <div>
+                        <h2>Acessos recentes</h2>
+                        <p>Visualização administrativa dos logins e módulos abertos pelos usuários do portal.</p>
+                    </div>
+                    <button type="button" class="secondary-button" id="atualizarAcessosPortal">Atualizar</button>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data/hora</th>
+                                <th>Nome</th>
+                                <th>E-mail</th>
+                                <th>Perfil</th>
+                                <th>Tipo</th>
+                                <th>Módulo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaAcessosPortal">
+                            <tr><td colspan="6">Carregando acessos...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </section>
         </main>
     </div>

@@ -32,9 +32,28 @@ service cloud.firestore {
       allow write: if admin();
     }
 
-    match /{document=**} {
-      allow read: if usuarioAtivo();
-      allow write: if podeEscrever();
+    match /acessos_portal/{document} {
+      allow read: if admin();
+      allow create: if autenticado()
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.keys().hasOnly([
+          'email',
+          'nome',
+          'perfil',
+          'modulos',
+          'tipo',
+          'modulo',
+          'pagina',
+          'userAgent',
+          'criadoEm',
+          'criadoEmCliente'
+        ]);
+      allow update, delete: if admin();
+    }
+
+    match /{collection}/{document=**} {
+      allow read: if usuarioAtivo() && collection != "acessos_portal";
+      allow write: if podeEscrever() && collection != "acessos_portal";
     }
   }
 }

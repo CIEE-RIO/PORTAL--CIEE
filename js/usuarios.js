@@ -5,6 +5,9 @@
     const podeEscrever = document.getElementById("usuarioPodeEscrever");
     const modulosBox = document.getElementById("usuarioModulosBox");
     const modulosContainer = document.getElementById("usuarioModulos");
+    const painelAcessos = document.getElementById("painelAcessosPortal");
+    const tabelaAcessos = document.getElementById("tabelaAcessosPortal");
+    const atualizarAcessos = document.getElementById("atualizarAcessosPortal");
 
     if (!form || !tabela || !window.portalAuth) {
         return;
@@ -38,6 +41,44 @@
 
     function rotuloPerfil(usuario) {
         return usuario.perfil === "admin" ? "Admin" : "Visualização";
+    }
+
+    function sessaoPodeVerAcessos() {
+        const sessao = window.portalAuth.obterSessao?.();
+        const email = String(sessao?.email || sessao?.usuario || "").toLowerCase();
+        return email === "rodrigob@cieerj.org.br" || sessao?.perfil === "admin";
+    }
+
+    function formatarDataAcesso(acesso) {
+        const origem = acesso?.criadoEm?.toDate?.() || (acesso?.criadoEmCliente ? new Date(acesso.criadoEmCliente) : null);
+        return origem && !Number.isNaN(origem.getTime()) ? origem.toLocaleString("pt-BR") : "-";
+    }
+
+    async function renderizarAcessosRecentes() {
+        if (!painelAcessos || !tabelaAcessos || !sessaoPodeVerAcessos()) {
+            return;
+        }
+
+        painelAcessos.hidden = false;
+        tabelaAcessos.innerHTML = `<tr><td colspan="6">Carregando acessos...</td></tr>`;
+
+        try {
+            const acessos = await window.portalAuth.listarAcessosRecentes?.(100) || [];
+
+            tabelaAcessos.innerHTML = acessos.map(acesso => `
+                <tr>
+                    <td>${escaparHtml(formatarDataAcesso(acesso))}</td>
+                    <td>${escaparHtml(acesso.nome || "-")}</td>
+                    <td>${escaparHtml(acesso.email || "-")}</td>
+                    <td>${escaparHtml(acesso.perfil || "-")}</td>
+                    <td>${escaparHtml(acesso.tipo || "-")}</td>
+                    <td>${escaparHtml(acesso.modulo || "-")}</td>
+                </tr>
+            `).join("") || `<tr><td colspan="6">Nenhum acesso registrado ainda.</td></tr>`;
+        } catch (erro) {
+            console.error(erro);
+            tabelaAcessos.innerHTML = `<tr><td colspan="6">Erro ao carregar acessos recentes.</td></tr>`;
+        }
     }
 
     function opcoesPerfil(usuario) {
@@ -271,6 +312,7 @@
     });
 
     perfil?.addEventListener("change", atualizarVisibilidadeModulos);
+    atualizarAcessos?.addEventListener("click", renderizarAcessosRecentes);
     preencherModulos();
     atualizarVisibilidadeModulos();
 
@@ -278,4 +320,5 @@
         console.error(erro);
         tabela.innerHTML = `<tr><td colspan="7">Erro ao carregar usuários.</td></tr>`;
     });
+    renderizarAcessosRecentes();
 })();
