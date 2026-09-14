@@ -11,9 +11,14 @@ function valorPorColuna(linha, nomeColuna) {
         return linha[nomeColuna];
     }
 
-    const chaveEsperada = normalizarChaveColuna(nomeColuna);
+    const chaveMapa = Object.keys(mapaColunas || {})
+        .find(chave => mapaColunas[chave] === nomeColuna);
+    const alternativas = chaveMapa && mapaColunasAlternativas?.[chaveMapa]
+        ? mapaColunasAlternativas[chaveMapa]
+        : [];
+    const chavesEsperadas = [nomeColuna, ...alternativas].map(normalizarChaveColuna);
     const chaveEncontrada = Object.keys(linha)
-        .find(coluna => normalizarChaveColuna(coluna) === chaveEsperada);
+        .find(coluna => chavesEsperadas.includes(normalizarChaveColuna(coluna)));
 
     return chaveEncontrada ? linha[chaveEncontrada] : "";
 }

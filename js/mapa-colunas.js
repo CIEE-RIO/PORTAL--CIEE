@@ -11,3 +11,10 @@ const mapaColunas = {
     satisfacaoNegativa: "Satisfação Negativa",
     sla: "SLA"
 };
+
+const mapaColunasAlternativas = {
+    nome: ["Colaborador", "Nome", "Funcionário", "Funcionario"],
+    email: ["E-mail do agente", "Email Backoffice", "E-mail", "Email"],
+    celula: ["Célula", "Celula"],
+    alteracoes: ["TAs", "TA", "Alterações", "Alteracoes"]
+};

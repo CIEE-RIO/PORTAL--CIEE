@@ -160,8 +160,26 @@ async function carregarPreCadastroDasBasesImportadas() {
 }
 
 function obterPlanilha(workbook) {
-    const nomePreferencial = workbook.SheetNames.find(nome => normalizarTexto(nome) === "PLANILHA1");
-    const nomeAba = nomePreferencial || workbook.SheetNames[0];
+    let melhorAba = workbook.SheetNames[0];
+    let melhorPontuacao = -1;
+
+    for (const nome of workbook.SheetNames) {
+        const planilha = workbook.Sheets[nome];
+        const linhas = XLSX.utils.sheet_to_json(planilha, { defval: "" });
+        const erros = validarColunasObrigatorias(linhas);
+        const pontuacao = linhas.length * 100 - erros.length;
+
+        if (linhas.length && !erros.length) {
+            return { nomeAba: nome, planilha };
+        }
+
+        if (pontuacao > melhorPontuacao) {
+            melhorAba = nome;
+            melhorPontuacao = pontuacao;
+        }
+    }
+
+    const nomeAba = melhorAba;
 
     return {
         nomeAba,
@@ -623,13 +641,19 @@ function validarColunasObrigatorias(linhas) {
     }
 
     const primeiraLinha = linhas[0];
-    const colunasObrigatorias = Object.values(mapaColunas);
 
-    return colunasObrigatorias.filter(coluna => {
-        const chaveEsperada = normalizarChaveColuna(coluna);
-        return !Object.keys(primeiraLinha)
-            .some(chave => normalizarChaveColuna(chave) === chaveEsperada);
-    });
+    return Object.entries(mapaColunas).reduce((faltantes, [chaveMapa, coluna]) => {
+        const alternativas = mapaColunasAlternativas?.[chaveMapa] || [];
+        const chavesEsperadas = [coluna, ...alternativas].map(normalizarChaveColuna);
+        const encontrada = Object.keys(primeiraLinha)
+            .some(chave => chavesEsperadas.includes(normalizarChaveColuna(chave)));
+
+        if (!encontrada) {
+            faltantes.push(coluna);
+        }
+
+        return faltantes;
+    }, []);
 }
 
 function celulasSemRegra(dadosPadronizados) {
