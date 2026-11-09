@@ -16,3 +16,11 @@ body{background:var(--bg);font-family:Inter,system-ui,Segoe UI,sans-serif;color:
   color: #fff !important;
   box-shadow: 0 14px 24px rgba(0,59,113,.18) !important;
 }
+
+/* Demanda mensal: campos e legenda acomodam os seis indicadores. */
+.demand-form{width:100%;min-width:0}
+#legendDemanda .legend-year-group{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.35rem .75rem}
+#legendDemanda .legend-item{white-space:normal}
+.layout #excluirDemandaMensal{background:#fff!important;color:var(--vermelho,#C23B3B)!important;border:1px solid var(--vermelho,#C23B3B)!important;box-shadow:none}
+.layout #excluirDemandaMensal:hover{background:#FFF1F1!important}
+@media(max-width:600px){#legendDemanda{max-width:100%;margin:0 0 12px}#legendDemanda .legend-year-group{grid-template-columns:1fr}}
