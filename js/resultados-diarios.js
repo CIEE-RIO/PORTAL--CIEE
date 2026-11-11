@@ -18,17 +18,7 @@ const sample = {
         {nome:"Público", atual:10172, variacao:47, meta:16498, faltam:6326},
         {nome:"Economia Mista", atual:6638, variacao:37, meta:7117, faltam:479}
       ],
-      unidades: [
-        {unidade:"CIEE Rio de Janeiro", anterior:33732, atual:33907, variacao:175, percentual:0.52, meta:42939, faltam:9032, porDia:903, vagas:1877, novasVagas:89},
-        {unidade:"Regionais Total", anterior:15273, atual:15364, variacao:91, percentual:0.60, meta:19620, faltam:4256, porDia:426, vagas:818, novasVagas:68},
-        {unidade:"Capital - RJ Total", anterior:14849, atual:14932, variacao:83, percentual:0.56, meta:19025, faltam:4093, porDia:409, vagas:745, novasVagas:13},
-        {unidade:"Sul Fluminense - Bruna", anterior:3021, atual:3033, variacao:12, percentual:0.40, meta:3799, faltam:766, porDia:77, vagas:99, novasVagas:17},
-        {unidade:"Noroeste Fluminense - Lucas", anterior:1799, atual:1812, variacao:13, percentual:0.72, meta:2234, faltam:422, porDia:42, vagas:58, novasVagas:2},
-        {unidade:"Norte Fluminense - Vinícius", anterior:1061, atual:1066, variacao:5, percentual:0.47, meta:1247, faltam:181, porDia:18, vagas:131, novasVagas:6},
-        {unidade:"Leste Fluminense - Pedro", anterior:2528, atual:2541, variacao:13, percentual:0.51, meta:3398, faltam:857, porDia:86, vagas:165, novasVagas:8},
-        {unidade:"Baixada Fluminense - Eric", anterior:2970, atual:2989, variacao:19, percentual:0.64, meta:3812, faltam:823, porDia:82, vagas:138, novasVagas:1},
-        {unidade:"Região Serrana - Thais", anterior:3894, atual:3923, variacao:29, percentual:0.74, meta:5130, faltam:1207, porDia:121, vagas:227, novasVagas:34}
-      ]
+      unidades: []
     },
     aprendiz: {
       total: {nome:"Total", anterior:25515, atual:25639, variacao:124, percentual:0.49, meta:27465, faltam:1826, porDia:183, vagas:824},
@@ -40,6 +30,57 @@ const sample = {
     }
   }
 };
+
+const UNIDADES = [
+  "Barra Mansa", "Campos", "Duque de Caxias", "Macaé", "Niterói",
+  "Nova Friburgo", "Nova Iguaçu", "Petrópolis", "Resende", "Rio de Janeiro",
+  "Teresópolis", "Três Rios", "Virtual Santa Catarina", "Virtual Rio Grande do Sul",
+  "Virtual Pernambuco", "Virtual Paraná", "Virtual Minas Gerais", "Virtual Espírito Santo",
+  "Personalizado Digital", "CIEE Digital Nacional"
+];
+function normalizarUnidade(value) {
+  return String(value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("pt-BR").replace(/\s+/g, " ").trim();
+}
+const UNIDADE_LOOKUP = new Map(UNIDADES.map(nome => [normalizarUnidade(nome), nome]));
+[
+  ["CIEE - Personalizado Digital Nacional", "Personalizado Digital"],
+  ["Personalizado Digital Nacional", "Personalizado Digital"],
+  ["Virtual SC", "Virtual Santa Catarina"],
+  ["Virtual RS", "Virtual Rio Grande do Sul"],
+  ["Virtual PE", "Virtual Pernambuco"],
+  ["Virtual PR", "Virtual Paraná"],
+  ["Virtual MG", "Virtual Minas Gerais"],
+  ["Virtual ES", "Virtual Espírito Santo"]
+].forEach(([alias, nome]) => UNIDADE_LOOKUP.set(normalizarUnidade(alias), nome));
+
+function unidadesDetalhadas(source) {
+  const presentes = new Map();
+  (Array.isArray(source) ? source : []).forEach(item => {
+    const raw = String(item?.unidade ?? "").trim();
+    const base = raw.split(/\s+[-–—]\s+/)[0].trim();
+    const unidade = UNIDADE_LOOKUP.get(normalizarUnidade(raw))
+      || UNIDADE_LOOKUP.get(normalizarUnidade(base));
+    if (unidade) presentes.set(unidade, item);
+  });
+  return UNIDADES.map(unidade => ({
+    ...(presentes.get(unidade) || {}),
+    unidade,
+    hasData: presentes.has(unidade)
+  }));
+}
+function fmtCell(item, key) {
+  return item.hasData && item[key] !== undefined && item[key] !== null && item[key] !== ""
+    ? fmt(item[key]) : "—";
+}
+function fmtPercentCell(item) {
+  return item.hasData && item.percentual !== undefined && item.percentual !== null && item.percentual !== ""
+    ? fmtPercent(item.percentual) : "—";
+}
+function fmtSignedCell(item, key) {
+  if (!item.hasData || item[key] === undefined || item[key] === null || item[key] === "") return "—";
+  return `${number(item[key]) > 0 ? "+" : ""}${fmt(item[key])}`;
+}
 
 const nf = new Intl.NumberFormat("pt-BR");
 const pct = new Intl.NumberFormat("pt-BR", {minimumFractionDigits:2, maximumFractionDigits:2});
@@ -75,7 +116,7 @@ function render() {
   const key = document.getElementById("rdProgram").value;
   const program = report.programas?.[key];
   const total = program?.total || {};
-  const units = Array.isArray(program?.unidades) ? program.unidades : [];
+  const units = unidadesDetalhadas(program?.unidades);
   const categories = Array.isArray(program?.categorias) ? program.categorias : [];
   const query = document.getElementById("rdSearch").value.trim().toLocaleLowerCase("pt-BR");
   const filtered = units.filter(item => String(item.unidade || "").toLocaleLowerCase("pt-BR").includes(query));
@@ -93,11 +134,11 @@ function render() {
     ? categories.map(item => `<article class="rd-category"><span>${safeText(item.nome)}</span><strong>${fmt(item.atual)} <small class="${valueClass(item.variacao)}">${number(item.variacao) >= 0 ? "+" : ""}${fmt(item.variacao)}</small></strong><small>Meta ${fmt(item.meta)} · Faltam ${fmt(item.faltam)}</small></article>`).join("")
     : '<div class="rd-empty">Não há subdivisões neste relatório.</div>';
 
-  if (!units.length) {
-    document.getElementById("rdTable").innerHTML = '<div class="rd-empty">O detalhamento por unidade será exibido quando esse conjunto de dados estiver disponível.</div>';
+  if (!filtered.length) {
+    document.getElementById("rdTable").innerHTML = '<div class="rd-empty">Nenhuma unidade corresponde à pesquisa.</div>';
     return;
   }
-  document.getElementById("rdTable").innerHTML = `<div class="rd-table-wrap"><table class="rd-table"><thead><tr><th>Unidade</th><th>Anterior</th><th>Atual</th><th>Variação</th><th>%</th><th>Meta</th><th>Faltam</th><th>Por dia</th><th>Vagas</th><th>Novas vagas</th></tr></thead><tbody>${filtered.map(item => `<tr><td class="rd-unit">${safeText(item.unidade)}</td><td>${fmt(item.anterior)}</td><td><strong>${fmt(item.atual)}</strong></td><td class="${valueClass(item.variacao)}">${number(item.variacao) > 0 ? "+" : ""}${fmt(item.variacao)}</td><td>${fmtPercent(item.percentual)}</td><td>${fmt(item.meta)}</td><td>${fmt(item.faltam)}</td><td>${fmt(item.porDia)}</td><td>${fmt(item.vagas)}</td><td>${fmt(item.novasVagas)}</td></tr>`).join("")}</tbody></table></div>`;
+  document.getElementById("rdTable").innerHTML = `<div class="rd-table-wrap"><table class="rd-table"><thead><tr><th>Unidade</th><th>Anterior</th><th>Atual</th><th>Variação</th><th>%</th><th>Meta</th><th>Faltam</th><th>Por dia</th><th>Vagas</th><th>Novas vagas</th></tr></thead><tbody>${filtered.map(item => `<tr><td class="rd-unit">${safeText(item.unidade)}</td><td>${fmtCell(item,"anterior")}</td><td><strong>${fmtCell(item,"atual")}</strong></td><td class="${item.hasData ? valueClass(item.variacao) : ""}">${fmtSignedCell(item,"variacao")}</td><td>${fmtPercentCell(item)}</td><td>${fmtCell(item,"meta")}</td><td>${fmtCell(item,"faltam")}</td><td>${fmtCell(item,"porDia")}</td><td>${fmtCell(item,"vagas")}</td><td>${fmtCell(item,"novasVagas")}</td></tr>`).join("")}</tbody></table></div>`;
 }
 
 async function carregarFirestore() {
