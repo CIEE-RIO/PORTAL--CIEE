@@ -2,6 +2,7 @@
     const MODULOS_PORTAL = [
         { id: "home", nome: "Menu", caminho: "index.html", padrao: true },
         { id: "sazonalidade", nome: "Sazonalidade", caminho: "modulos/sazonalidade/index.html" },
+        { id: "resultados-diarios", nome: "Resultados diários", caminho: "modulos/resultados-diarios/index.html" },
         { id: "desligamentos", nome: "Desligamentos", caminho: "modulos/desligamentos/index.html" },
         { id: "producao", nome: "Produção", caminho: "modulos/producao/index.html" },
         { id: "wfm", nome: "Avaliação WFM", caminho: "modulos/wfm/index.html" },
@@ -102,6 +103,7 @@
         }
 
         if (path.includes("/modulos/sazonalidade/")) return "sazonalidade";
+        if (path.includes("/modulos/resultados-diarios/")) return "resultados-diarios";
         if (path.includes("/modulos/desligamentos/")) return "desligamentos";
         if (path.includes("/modulos/producao/")) return "producao";
         if (path.includes("/modulos/wfm/")) return "wfm";
