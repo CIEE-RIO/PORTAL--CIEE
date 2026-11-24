@@ -7,6 +7,7 @@
 }
 
 :root {
+    --sidebar-width: 244px;
     --azul: #003b71;
     --azul-2: #005ea8;
     --laranja: #ff7a00;
@@ -72,7 +73,7 @@ input {
 .layout {
     min-height: 100vh;
     display: grid;
-    grid-template-columns: 280px 1fr;
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
 }
 
 .sidebar {
@@ -97,7 +98,7 @@ input {
 
 .sidebar-toggle {
     position: fixed;
-    left: 260px;
+    left: calc(var(--sidebar-width) - 20px);
     top: 14px;
     z-index: 1000;
     width: 42px;
@@ -1050,6 +1051,7 @@ body.sidebar-collapsed .sidebar-toggle::before {
 }
 
 .content {
+    min-width: 0;
     padding: 28px;
 }
 
@@ -4117,6 +4119,68 @@ tbody tr:last-child td {
 .badge-danger {
     background: #fdecec;
     color: var(--vermelho);
+}
+
+@media (min-width: 981px) {
+    .sidebar {
+        padding: 20px 16px;
+    }
+
+    .sidebar .logo {
+        margin-bottom: 22px;
+    }
+
+    .sidebar .logo img {
+        height: 76px;
+    }
+
+    .sidebar .logo h2 {
+        font-size: 20px;
+    }
+
+    .sidebar nav {
+        gap: 5px;
+    }
+
+    .sidebar nav a {
+        gap: 10px;
+        padding: 7px 10px;
+        font-size: 14px;
+    }
+
+    .content {
+        padding: 20px 24px;
+    }
+
+    .topbar {
+        padding: 18px 22px;
+        margin-bottom: 16px;
+    }
+
+    .topbar h1 {
+        font-size: 30px;
+    }
+
+    .dashboard {
+        padding: 18px;
+        margin-bottom: 16px;
+    }
+
+    .module-grid {
+        margin-top: 16px;
+    }
+
+    .module-tile {
+        min-height: 156px;
+        gap: 8px;
+        padding: 14px;
+    }
+}
+
+@media (min-width: 1480px) {
+    .module-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 980px) {
