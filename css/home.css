@@ -1,0 +1,106 @@
+.home-content {
+    min-height: 100vh;
+    background-color: #0e173c;
+    background-image:
+        linear-gradient(90deg, rgba(10, 19, 48, .48), transparent 70%),
+        url("../assets/fundo-portal-ciee.webp");
+    background-position: right center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    padding: clamp(24px, 3vw, 54px);
+}
+
+.layout .home-content .topbar,
+.layout .home-content .dashboard {
+    max-width: min(62%, 1040px);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+}
+
+.home-content .topbar::before {
+    display: none;
+}
+
+.layout .home-content .topbar h1,
+.layout .home-content .dashboard h2 {
+    color: #fff;
+}
+
+.home-content .topbar p,
+.home-content .dashboard > p {
+    color: #e4edf9;
+}
+
+.layout .home-content .topbar {
+    margin-bottom: 24px;
+}
+
+.home-content .module-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.home-content .module-tile {
+    min-height: 116px;
+    gap: 6px;
+    padding: 12px;
+    background: #f7faff;
+}
+
+.home-content .module-tile .module-visual {
+    width: 44px;
+    height: 40px;
+    border-radius: 10px;
+    background-size: 30px;
+}
+
+.home-content .module-visual-wfm {
+    background-image: url("../assets/icones/usuarios.png");
+}
+
+.home-content .module-tile > span:last-child {
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.home-content .module-tile:focus-visible {
+    outline: 3px solid #70eaff;
+    outline-offset: 3px;
+}
+
+@media (min-width: 1600px) {
+    .home-content .module-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 980px) {
+    .home-content {
+        background-image:
+            linear-gradient(180deg, rgba(10, 19, 48, .4), #0e173c 520px),
+            url("../assets/fundo-portal-ciee.webp");
+        background-position: top right;
+        background-size: 100% 540px, auto 540px;
+    }
+
+    .layout .home-content .topbar,
+    .layout .home-content .dashboard {
+        max-width: none;
+    }
+}
+
+@media (max-width: 520px) {
+    .home-content {
+        background-size: 100% 360px, auto 360px;
+        background-image:
+            linear-gradient(180deg, rgba(10, 19, 48, .45), #0e173c 360px),
+            url("../assets/fundo-portal-ciee.webp");
+    }
+
+    .home-content .module-grid {
+        grid-template-columns: 1fr;
+    }
+}
