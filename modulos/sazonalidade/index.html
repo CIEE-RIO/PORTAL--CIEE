@@ -21,114 +21,6 @@
       container: sazonalidade / inline-size;
     }
 
-    .season-header {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: .75rem 1rem;
-    }
-
-    .layout .season-header h1 {
-      margin-bottom: .5rem;
-      font-weight: 800;
-      letter-spacing: -.025em;
-    }
-
-    .layout .season-header .nav-tabs {
-      gap: .375rem;
-      margin: 0;
-      padding: 0;
-      border: 0;
-    }
-
-    .layout .season-header .nav-tabs .nav-link {
-      min-height: 36px;
-      padding: .375rem .75rem;
-      border-radius: 8px;
-      font-size: .875rem;
-    }
-
-    .layout .season-header .nav-tabs .nav-link.active {
-      background: #e8f0f8 !important;
-      color: var(--ci-navy) !important;
-      box-shadow: none !important;
-    }
-
-    .season-actions {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      gap: .5rem;
-    }
-
-    .season-actions :is(.btn, summary),
-    .season-filters #resetFilters {
-      min-height: 36px;
-      padding: .375rem .625rem;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: .875rem;
-      font-weight: 700;
-      color: var(--ci-navy);
-      background: var(--card);
-      box-shadow: none;
-    }
-
-    .season-actions :is(.btn, summary):hover,
-    .season-filters #resetFilters:hover {
-      background: #edf3f8;
-    }
-
-    .season-upload {
-      position: relative;
-    }
-
-    .season-upload summary {
-      cursor: pointer;
-      line-height: 1.5;
-    }
-
-    .season-upload-field {
-      position: absolute;
-      inset-inline-end: 0;
-      top: calc(100% + .4rem);
-      z-index: 10;
-      width: min(320px, calc(100vw - 100px));
-      padding: .75rem;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: 0 8px 24px rgba(15, 23, 42, .12);
-    }
-
-    .season-header:has(.season-upload[open]) {
-      position: relative;
-      z-index: 5;
-    }
-
-    .season-upload-field .form-control,
-    .season-filters .form-control,
-    .season-filters .form-select {
-      min-width: 0;
-      border-radius: 8px;
-      font-size: .875rem;
-    }
-
-    .season-status {
-      margin-top: .625rem;
-    }
-
-    @media (max-width: 680px) {
-      .season-actions {
-        justify-content: flex-start;
-      }
-
-      .season-upload-field {
-        inset-inline: 0 auto;
-      }
-    }
-
     .season-chart-grid {
       display: grid;
       grid-template-columns: minmax(0, 1fr);
@@ -172,22 +64,6 @@
       }
     }
 
-    @container sazonalidade (min-width: 1000px) {
-      .season-filters {
-        display: grid;
-        grid-template-columns: minmax(125px, 1fr) minmax(84px, .55fr) minmax(96px, .65fr) minmax(140px, 1.2fr) minmax(160px, 1.4fr) auto;
-        gap: .75rem;
-        margin: 0;
-      }
-
-      .season-filters > * {
-        width: auto;
-        min-width: 0;
-        margin: 0;
-        padding: 0;
-      }
-    }
-
     @container sazonalidade (min-width: 1500px) {
       .season-chart-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -198,6 +74,7 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="../../css/dashboard-controls.css?v=1">
 </head>
 <body>
 <script src="../../js/auth.js"></script>
@@ -222,18 +99,18 @@
   </aside>
   <main class="content sazonalidade-content">
 <div class="sazonalidade-shell container-fluid py-2 px-0">
-  <header class="app-header season-header p-3 mb-3">
+  <header class="app-header dashboard-controls-header p-3 mb-3">
     <div>
       <h1 class="h3">Dashboard Sazonalidade</h1>
-      <ul class="nav nav-tabs" id="dashboardTabs" aria-label="Modalidade">
+      <ul class="nav nav-tabs dashboard-controls-tabs" id="dashboardTabs" aria-label="Modalidade">
         <li class="nav-item"><a id="tabEstagio" class="nav-link" href="?tipo=estagio">Estágio</a></li>
         <li class="nav-item"><a id="tabAprendiz" class="nav-link" href="?tipo=aprendiz">Aprendiz</a></li>
       </ul>
     </div>
-    <div class="season-actions">
-      <details class="season-upload">
+    <div class="dashboard-controls-actions">
+      <details class="dashboard-controls-upload">
         <summary>Importar Excel</summary>
-        <div class="season-upload-field">
+        <div class="dashboard-controls-upload-field">
           <label class="form-label" for="fileInput">Atualizar base Excel para todos</label>
           <input id="fileInput" class="form-control" type="file" accept=".xlsx,.xls">
           <div class="small-help mt-2">Ao enviar, a planilha substitui somente a base da aba ativa.</div>
@@ -246,7 +123,7 @@
   </header>
 
   <section class="dash-card p-3 mb-3">
-    <div class="row g-2 align-items-end season-filters">
+    <div class="row g-2 align-items-end dashboard-controls-filters">
       <div class="col-6 col-md-3">
         <label class="form-label" for="tipoFilter">Tipo Empresa</label>
         <select id="tipoFilter" class="form-select"></select>
@@ -271,7 +148,7 @@
         <button id="resetFilters" class="btn btn-sm btn-outline-secondary" type="button">Limpar</button>
       </div>
     </div>
-    <div class="season-status small-help d-flex align-items-center gap-2" role="status">
+    <div class="dashboard-controls-status small-help d-flex align-items-center gap-2" role="status">
       <span id="statusDot" class="status-dot" aria-hidden="true"></span>
       <span id="statusText">Conectando ao banco de dados...</span>
     </div>
