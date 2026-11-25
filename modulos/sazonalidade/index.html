@@ -21,6 +21,16 @@
       container: sazonalidade / inline-size;
     }
 
+    .sazonalidade-shell .dashboard-controls-actions {
+      align-items: flex-start;
+    }
+
+    .season-last-update {
+      margin: .3rem 0 0;
+      color: var(--muted);
+      font-size: .75rem;
+    }
+
     .season-chart-grid {
       display: grid;
       grid-template-columns: minmax(0, 1fr);
@@ -108,15 +118,18 @@
       </ul>
     </div>
     <div class="dashboard-controls-actions">
-      <details class="dashboard-controls-upload">
-        <summary>Importar Excel</summary>
-        <div class="dashboard-controls-upload-field">
-          <label class="form-label" for="fileInput">Atualizar base Excel para todos</label>
-          <input id="fileInput" class="form-control" type="file" accept=".xlsx,.xls">
-          <div class="small-help mt-2">Ao enviar, a planilha substitui somente a base da aba ativa.</div>
-          <div class="small-counter">Registros carregados: <strong id="kpiRegistrosHeader">-</strong></div>
-        </div>
-      </details>
+      <div>
+        <details class="dashboard-controls-upload">
+          <summary>Importar Excel</summary>
+          <div class="dashboard-controls-upload-field">
+            <label class="form-label" for="fileInput">Atualizar base Excel para todos</label>
+            <input id="fileInput" class="form-control" type="file" accept=".xlsx,.xls">
+            <div class="small-help mt-2">Ao enviar, a planilha substitui somente a base da aba ativa.</div>
+            <div class="small-counter">Registros carregados: <strong id="kpiRegistrosHeader">-</strong></div>
+          </div>
+        </details>
+        <p class="season-last-update">Última atualização: <span id="kpiAtualizacao">-</span></p>
+      </div>
       <button id="syncNow" class="btn" type="button">Sincronizar</button>
       <button id="exportPng" class="btn" type="button">Exportar PNG</button>
     </div>
@@ -153,7 +166,7 @@
       <span id="statusText">Conectando ao banco de dados...</span>
     </div>
   </section>
-  <section class="row g-3 mb-3"><div class="col-md-6"><div class="card-kpi p-3 h-100"><div class="kpi-title">Total de ativos</div><div id="kpiAtivos" class="kpi-value">-</div><div id="kpiAtivosSub" class="kpi-sub">Aguardando o fechamento do mês anterior.</div></div></div><div class="col-md-6"><div class="card-kpi p-3 h-100"><div class="kpi-title">Última atualização</div><div id="kpiAtualizacao" class="kpi-value" style="font-size:1.05rem">-</div><div class="kpi-sub">Informação salva no banco.</div></div></div></section>
+  <section class="row g-3 mb-3"><div class="col-md-6"><div class="card-kpi p-3 h-100"><div class="kpi-title">Total de ativos</div><div id="kpiAtivos" class="kpi-value">-</div><div id="kpiAtivosSub" class="kpi-sub">Aguardando o fechamento do mês anterior.</div></div></div></section>
 
   <section class="season-chart-grid mb-3">
     <div><div class="dash-card p-3 h-100"><div class="season-chart-header d-flex justify-content-between align-items-start gap-2 mb-1"><h2 class="h5 fw-bold mb-1">Sazonalidade de Virada - Comparativo Mensal</h2><div class="d-flex gap-2 align-items-center"><button class="btn btn-outline-secondary btn-chart-control btn-chart-zoom" type="button" data-chart-id="sazoChart" data-zoom-action="out">−</button><button class="btn btn-outline-primary btn-chart-control btn-chart-zoom" type="button" data-chart-id="sazoChart" data-zoom-action="in">+</button><button class="btn btn-outline-secondary btn-chart-control btn-chart-pan" type="button" data-chart-id="sazoChart" data-pan-action="left">←</button><button class="btn btn-outline-secondary btn-chart-control btn-chart-pan" type="button" data-chart-id="sazoChart" data-pan-action="right">→</button><button class="btn btn-outline-primary btn-chart-png" type="button" data-chart-id="sazoChart" data-file-name="comparativo-mensal-sazo.png">PNG</button></div></div><div class="small-help mb-2">Cálculo: <strong>(Ativos do dia com maior queda − Ativos do último dia mês anterior) / Ativos do último dia mês anterior.</strong></div><div class="chart-wrap"><canvas id="sazoChart"></canvas></div><div id="yearLegendSazo" class="year-legend mt-3"></div></div></div>
