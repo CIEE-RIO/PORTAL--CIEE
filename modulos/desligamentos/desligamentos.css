@@ -137,3 +137,13 @@ body{background:var(--bg);font-family:Inter,system-ui,Segoe UI,sans-serif;color:
 .demand-chart-wrap canvas {
   max-width: 100%;
 }
+
+.desligamentos-shell .dashboard-controls-actions {
+  align-items: flex-start;
+}
+
+.desligamentos-last-update {
+  margin: .3rem 0 0;
+  color: var(--muted);
+  font-size: .75rem;
+}
