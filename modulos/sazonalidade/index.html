@@ -20,6 +20,46 @@
       container: sazonalidade / inline-size;
     }
 
+    .layout .season-header {
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
+      background: #0e173c;
+      border: 1px solid #263665;
+    }
+
+    .season-header::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: url("../../assets/fundo-portal-ciee.webp") right 65% / auto 275px no-repeat;
+      mask-image: linear-gradient(to right, transparent 25%, #000 85%);
+      opacity: .35;
+      pointer-events: none;
+    }
+
+    .layout .season-header h1 {
+      color: #fff;
+      font-weight: 950;
+      letter-spacing: -.03em;
+    }
+
+    .season-header :is(.text-muted-custom, .form-label, .small-help, .small-counter, .small-counter strong) {
+      color: #e4edf9;
+    }
+
+    .season-header .accent-dot {
+      background: #ff9a45;
+    }
+
+    @media (min-width: 1200px) {
+      .season-header::before {
+        mask-image: linear-gradient(to right, transparent calc(100% - 430px), #000 calc(100% - 210px));
+        opacity: 1;
+      }
+    }
+
     .season-chart-grid {
       display: grid;
       grid-template-columns: minmax(0, 1fr);
@@ -128,7 +168,24 @@
     <li class="nav-item" role="presentation"><a id="tabAprendiz" class="nav-link" href="?tipo=aprendiz">Aprendiz</a></li>
   </ul>
 
-  <section class="app-header p-3 mb-3"><div class="row g-3 align-items-center"><div class="col-lg-8"><div class="d-flex align-items-center gap-3"><div><div class="d-flex align-items-center gap-2 mb-2"><span class="accent-dot"></span><span class="fw-bold text-muted-custom">Dashboard Sazonalidade</span></div><h1 class="h3 mb-1" style="font-weight:950;letter-spacing:-.03em;color:var(--ci-navy)">Dashboard Sazonalidade</h1><p class="mb-0 text-muted-custom">Base Excel importada no dashboard ativo, salva separadamente em Estágio ou Aprendiz e atualizada para todos os usuários.</p></div></div></div><div class="col-lg-4"><label class="form-label">Atualizar base Excel para todos</label><input id="fileInput" class="form-control" type="file" accept=".xlsx,.xls"><div class="small-help mt-2">Ao enviar, a planilha substitui somente a base da aba ativa.</div><div class="small-counter">Registros carregados: <strong id="kpiRegistrosHeader">-</strong></div></div></div></section>
+  <section class="app-header season-header p-3 mb-3">
+    <div class="row g-3 align-items-center">
+      <div class="col-lg-7 col-xl-5">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <span class="accent-dot" aria-hidden="true"></span>
+          <span class="fw-bold text-muted-custom">Dashboard Sazonalidade</span>
+        </div>
+        <h1 class="h3 mb-1">Dashboard Sazonalidade</h1>
+        <p class="mb-0 text-muted-custom">Base Excel importada no dashboard ativo, salva separadamente em Estágio ou Aprendiz e atualizada para todos os usuários.</p>
+      </div>
+      <div class="col-lg-5 col-xl-4">
+        <label class="form-label" for="fileInput">Atualizar base Excel para todos</label>
+        <input id="fileInput" class="form-control" type="file" accept=".xlsx,.xls">
+        <div class="small-help mt-2">Ao enviar, a planilha substitui somente a base da aba ativa.</div>
+        <div class="small-counter">Registros carregados: <strong id="kpiRegistrosHeader">-</strong></div>
+      </div>
+    </div>
+  </section>
 
   <section class="dash-card p-3 mb-3"><div class="row g-2 align-items-end season-filters"><div class="col-md-3 col-xl-2"><label class="form-label">Tipo Empresa</label><select id="tipoFilter" class="form-select"></select></div><div class="col-md-2 col-xl-1"><label class="form-label">Ano</label><select id="anoFilter" class="form-select"></select></div><div class="col-md-2 col-xl-1"><label class="form-label">Mês</label><select id="mesFilter" class="form-select"></select></div><div class="col-md-3 col-xl-2"><label class="form-label">Unidade</label><select id="unidadeFilter" class="form-select"></select></div><div class="col-md-4 col-xl-3"><label class="form-label">Pesquisa geral</label><input id="searchInput" class="form-control" type="search" placeholder="Digite unidade, tipo, mês..."></div><div class="col-md-5 col-xl-3"><label class="form-label">Ações</label><div class="d-flex action-tabs"><button id="resetFilters" class="btn btn-outline-secondary w-100" type="button">Limpar</button><button id="exportPng" class="btn btn-outline-primary w-100" type="button">PNG</button><button id="syncNow" class="btn btn-outline-primary w-100" type="button">Sincronizar</button></div></div></div><div class="mt-3 small-help d-flex align-items-center gap-2"><span id="statusDot" class="status-dot"></span><span id="statusText">Conectando ao banco de dados...</span></div></section>
   <section class="row g-3 mb-3"><div class="col-md-6"><div class="card-kpi p-3 h-100"><div class="kpi-title">Total de ativos</div><div id="kpiAtivos" class="kpi-value">-</div><div id="kpiAtivosSub" class="kpi-sub">Soma todos os registros da competência mais recente, usando a coluna de ativos mais atual que esteja completamente preenchida.</div></div></div><div class="col-md-6"><div class="card-kpi p-3 h-100"><div class="kpi-title">Última atualização</div><div id="kpiAtualizacao" class="kpi-value" style="font-size:1.05rem">-</div><div class="kpi-sub">Informação salva no banco.</div></div></div></section>
