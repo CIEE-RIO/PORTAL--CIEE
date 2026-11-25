@@ -83,9 +83,7 @@ input {
     min-height: 100vh;
     max-height: 100vh;
     overflow-y: auto;
-    background:
-        radial-gradient(circle at 28% 0%, rgba(0, 148, 255, .30), transparent 36%),
-        linear-gradient(180deg, #064981 0%, #00294f 58%, #001a34 100%);
+    background: #0a153e url("../assets/fundo-menu-lateral.webp") center bottom / cover no-repeat;
     color: white;
     padding: 28px 22px;
     box-shadow: 22px 0 50px rgba(0, 22, 48, .18);
@@ -4193,6 +4191,9 @@ tbody tr:last-child td {
         min-height: auto;
         max-height: none;
         overflow-y: visible;
+        background-image:
+            linear-gradient(rgba(10, 21, 62, .35), rgba(10, 21, 62, .55)),
+            url("../assets/fundo-menu-lateral.webp");
     }
 
     .sidebar nav {
