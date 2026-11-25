@@ -24,3 +24,21 @@ body{background:var(--bg);font-family:Inter,system-ui,Segoe UI,sans-serif;color:
 .layout #excluirDemandaMensal{background:#fff!important;color:var(--vermelho,#C23B3B)!important;border:1px solid var(--vermelho,#C23B3B)!important;box-shadow:none}
 .layout #excluirDemandaMensal:hover{background:#FFF1F1!important}
 @media(max-width:600px){#legendDemanda{max-width:100%;margin:0 0 12px}#legendDemanda .legend-year-group{grid-template-columns:1fr}}
+
+.desligamentos-content {
+  position: relative;
+  isolation: isolate;
+  background-color: #10164e;
+}
+
+.desligamentos-content::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: max(100vh, 56.25vw);
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, transparent 65%, #10164e),
+    url("../../assets/fundo-azul-ondas.webp") center top / cover no-repeat;
+}
