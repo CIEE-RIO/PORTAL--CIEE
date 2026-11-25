@@ -1053,6 +1053,33 @@ body.sidebar-collapsed .sidebar-toggle::before {
     padding: 28px;
 }
 
+.module-content {
+    --module-background: #10164e;
+    position: relative;
+    isolation: isolate;
+    background-color: var(--module-background);
+}
+
+.module-content::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: max(100vh, 56.25vw);
+    max-height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        linear-gradient(to bottom, transparent 65%, var(--module-background)),
+        url("../assets/fundo-azul-ondas.webp") center top / cover no-repeat;
+}
+
+.layout .module-content > .module-tabs,
+.layout .module-content #dashboardTabs,
+.module-content .access-denied-card {
+    background-color: #f7fbff;
+    border-radius: var(--radius);
+}
+
 .access-denied-mode .content > :not(.access-denied-card) {
     display: none !important;
 }
