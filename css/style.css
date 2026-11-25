@@ -1053,33 +1053,6 @@ body.sidebar-collapsed .sidebar-toggle::before {
     padding: 28px;
 }
 
-.module-content {
-    --module-background: #10164e;
-    position: relative;
-    isolation: isolate;
-    background-color: var(--module-background);
-}
-
-.module-content::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto;
-    height: max(100vh, 56.25vw);
-    max-height: 100%;
-    z-index: -1;
-    pointer-events: none;
-    background:
-        linear-gradient(to bottom, transparent 65%, var(--module-background)),
-        url("../assets/fundo-azul-ondas.webp") center top / cover no-repeat;
-}
-
-.layout .module-content > .module-tabs,
-.layout .module-content #dashboardTabs,
-.module-content .access-denied-card {
-    background-color: #f7fbff;
-    border-radius: var(--radius);
-}
-
 .access-denied-mode .content > :not(.access-denied-card) {
     display: none !important;
 }
@@ -4626,4 +4599,85 @@ tbody tr:last-child td {
     background: var(--azul) !important;
     color: #fff !important;
     box-shadow: 0 14px 24px rgba(0, 59, 113, .18) !important;
+}
+
+/* Shared visual theme for the internal modules. */
+.module-layout {
+    --module-surface: #f3f5f8;
+    --module-border: #dce3eb;
+    --module-shadow: 0 1px 2px rgba(15, 23, 42, .06);
+    background-color: var(--module-surface);
+}
+
+.module-layout .sidebar {
+    background: #0c2744;
+    box-shadow: none;
+}
+
+.module-layout .sidebar .nav-icon {
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    filter: grayscale(1) brightness(1.45);
+}
+
+.module-layout .sidebar nav a:hover,
+.module-layout .sidebar nav a.active {
+    background: #244868;
+    border-color: #355573;
+    box-shadow: none;
+}
+
+.module-layout .sidebar nav a.active .nav-icon {
+    filter: none;
+}
+
+.layout.module-layout :is(.topbar, .app-header, .dashboard, .dash-card, .cardx, .kpi, .kpi-card, .card-kpi) {
+    border: 1px solid var(--module-border);
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: var(--module-shadow);
+    backdrop-filter: none;
+}
+
+.module-layout .topbar::before {
+    content: none;
+}
+
+.module-layout .access-denied-card {
+    background: #fff;
+    border: 1px solid var(--module-border);
+    border-radius: 12px;
+}
+
+.layout.module-layout :is(.module-tabs, .pre-register-tabs, .tabs) {
+    padding-inline: .5rem;
+    border-color: var(--module-border);
+}
+
+.layout.module-layout :is(.module-tabs, .pre-register-tabs, .tabs) button {
+    min-height: 36px;
+    padding: .375rem .75rem;
+    border-radius: 8px;
+    font-size: .875rem;
+}
+
+.layout.module-layout :is(.module-tabs, .pre-register-tabs, .tabs) button.active {
+    background: #e8f0f8 !important;
+    color: var(--azul) !important;
+    box-shadow: none !important;
+}
+
+.module-layout .app-header .tabs {
+    margin-bottom: 0;
+}
+
+.layout.module-layout :is(.btn-primary, .primary-button) {
+    background: var(--azul);
+    box-shadow: none;
+}
+
+.layout.module-layout :is(.btn-primary, .primary-button):hover {
+    background: var(--azul-2);
+    box-shadow: none;
 }
