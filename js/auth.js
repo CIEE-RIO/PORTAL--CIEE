@@ -517,7 +517,9 @@
             return;
         }
 
-        document.querySelectorAll(".sidebar nav a").forEach(link => {
+        const nav = document.querySelector(".sidebar nav");
+        const menu = document.getElementById("menuModulos");
+        document.querySelectorAll(".sidebar nav a, #menuModulos .module-tile").forEach(link => {
             const href = link.getAttribute("href") || "";
             const modulo = MODULOS_PORTAL
                 .filter(item => item.id !== "home")
@@ -525,10 +527,18 @@
                 || (href.includes("index.html") && !href.includes("/modulos/") && !href.includes("../") ? MODULOS_PORTAL[0] : null)
                 || (href.endsWith("../../index.html") ? MODULOS_PORTAL[0] : null);
 
-            if (modulo && !usuarioPodeAcessar(sessao, modulo.id)) {
+            if (modulo ? !usuarioPodeAcessar(sessao, modulo.id) : menu?.contains(link)) {
                 link.remove();
             }
         });
+
+        if (nav) nav.hidden = false;
+
+        if (menu) {
+            const temModulos = Boolean(menu.querySelector(".module-tile"));
+            menu.hidden = !temModulos;
+            document.getElementById("menuSemModulos").hidden = temModulos;
+        }
     }
 
     function inserirBotaoSair() {

@@ -6,7 +6,7 @@
     <title>Menu</title>
     <link rel="icon" type="image/svg+xml" sizes="any" href="./assets/favicon-ciee.svg">
     <link rel="stylesheet" href="./css/style.css?v=layout-9">
-    <link rel="stylesheet" href="./css/home.css">
+    <link rel="stylesheet" href="./css/home.css?v=menu-acessos-1">
 </head>
 <body>
     <div class="layout">
@@ -17,7 +17,7 @@
                 <span>Gestão Corporativa</span>
             </div>
 
-            <nav>
+            <nav hidden>
                 <a class="active" href="./index.html"><span class="nav-icon nav-icon-dashboard" aria-hidden="true"></span>Menu</a>
                 <a href="./modulos/sazonalidade/index.html"><span class="nav-icon nav-icon-season" aria-hidden="true"></span>Sazonalidade</a>
                 <a href="./modulos/desligamentos/index.html"><span class="nav-icon nav-icon-exit" aria-hidden="true"></span>Desligamentos</a>
@@ -40,9 +40,9 @@
 
             <section class="dashboard">
                 <h2>Área de trabalho</h2>
-                <p>Use o menu lateral para acessar os módulos de Sazonalidade e Produção.</p>
+                <p id="menuSemModulos" hidden>Nenhum módulo está liberado para o seu perfil.</p>
 
-                <div class="module-grid">
+                <div id="menuModulos" class="module-grid" hidden>
                     <a class="module-tile" href="./modulos/sazonalidade/index.html">
                         <span class="module-visual module-visual-season" aria-hidden="true"></span>
                         <strong>Sazonalidade</strong>
@@ -78,11 +78,16 @@
                         <strong>Memória de cálculo</strong>
                         <span>Fórmulas, atividades, metas, prévia mensal e força de trabalho.</span>
                     </a>
+                    <a class="module-tile" href="./modulos/usuarios/index.html">
+                        <span class="module-visual module-visual-users" aria-hidden="true"></span>
+                        <strong>Usuários</strong>
+                        <span>Gerencie perfis, permissões e acessos ao portal.</span>
+                    </a>
                 </div>
             </section>
         </main>
     </div>
-    <script src="./js/auth.js"></script>
+    <script src="./js/auth.js?v=menu-acessos-1"></script>
 </body>
 </html>
 

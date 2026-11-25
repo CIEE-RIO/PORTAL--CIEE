@@ -104,3 +104,9 @@
         grid-template-columns: 1fr;
     }
 }
+
+
+.layout > .sidebar nav[hidden],
+.home-content .module-grid[hidden] {
+    display: none;
+}
